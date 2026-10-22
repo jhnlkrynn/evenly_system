@@ -24,16 +24,7 @@
 @endsection
 
 @section('form')
-{{-- Static phase: the "Demo destination" select decides where the form goes (see resources/js/eventlynk/auth.js). --}}
-@php
-    $destinations = [
-        'customer' => route('customer.dashboard'),
-        'vendor' => route('vendor.dashboard'),
-        'admin' => route('admin.dashboard'),
-        'superadmin' => route('superadmin.dashboard'),
-    ];
-@endphp
-<form class="auth-form" method="POST" action="{{ route('login') }}" data-demo-login data-destinations="{{ json_encode($destinations) }}">
+<form class="auth-form" method="POST" action="{{ route('login') }}" novalidate>
     @csrf
     <button type="button" class="auth-back" data-href="{{ route('home') }}">
         ← <span>Back to<br>home</span>
@@ -56,14 +47,21 @@
         <span>or with email</span>
     </div>
 
+    @if (session('status'))
+        <div class="auth-message success" role="status">{{ session('status') }}</div>
+    @endif
+
     <label class="auth-field">
         <span>Email</span>
-        <input type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" autocomplete="email" required>
+        <input type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" autocomplete="email" required autofocus>
     </label>
 
     <label class="auth-field">
         <span class="field-label-row">
-            Password <button type="button">Forgot password?</button>
+            Password
+            @if (Route::has('password.request'))
+                <button type="button" data-href="{{ route('password.request') }}">Forgot password?</button>
+            @endif
         </span>
         <div class="password-field">
             <input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
@@ -73,21 +71,14 @@
 
     <div class="auth-form-row">
         <label class="check-label">
-            <input type="checkbox" name="remember" checked>
+            <input type="checkbox" name="remember" value="1" @checked(old('remember', true))>
             <span>Keep me logged in</span>
-        </label>
-        <label class="role-select">
-            <span>Demo destination</span>
-            <select name="demo_role" data-demo-role>
-                <option value="customer">Customer</option>
-                <option value="vendor">Vendor</option>
-                <option value="admin">Admin</option>
-                <option value="superadmin">Super Admin</option>
-            </select>
         </label>
     </div>
 
+    @include('auth.partials.errors')
+
     <button class="auth-submit" type="submit">Log in</button>
-    <p class="auth-note">We’ll take you to the selected dashboard for this interactive mockup.</p>
+    <p class="auth-note">You’ll be taken to your dashboard — customers, vendors and admins each have their own.</p>
 </form>
 @endsection

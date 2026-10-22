@@ -26,8 +26,12 @@
                     <button type="button" data-open-modal="browse-about">About Us</button>
                 </nav>
                 <div>
-                    <button type="button" class="browse-login" data-href="{{ route('login') }}">Log in</button>
-                    <button type="button" class="browse-signup" data-href="{{ route('register') }}">Sign up</button>
+                    @auth
+                        <x-user-menu />
+                    @else
+                        <button type="button" class="browse-login" data-href="{{ route('login') }}">Log in</button>
+                        <button type="button" class="browse-signup" data-href="{{ route('register') }}">Sign up</button>
+                    @endauth
                 </div>
             </div>
         </header>

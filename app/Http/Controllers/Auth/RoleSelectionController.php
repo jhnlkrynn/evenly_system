@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 
 class RoleSelectionController extends Controller
@@ -12,11 +13,6 @@ class RoleSelectionController extends Controller
      */
     public function show(): View
     {
-        return view('auth.role', [
-            'roles' => [
-                ['id' => 'customer', 'icon' => '🎉', 'label' => 'Customer', 'desc' => 'Book services for my events'],
-                ['id' => 'vendor', 'icon' => '🏪', 'label' => 'Vendor', 'desc' => 'List my event business'],
-            ],
-        ]);
+        return view('auth.role', ['roles' => User::REGISTRATION_ROLES]);
     }
 }

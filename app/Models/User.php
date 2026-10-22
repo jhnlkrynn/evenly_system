@@ -18,6 +18,20 @@ class User extends Authenticatable
 
     public const ROLES = ['customer', 'vendor', 'admin', 'superadmin'];
 
+    /** Dashboard route for each role (routes/web.php). */
+    public const DASHBOARD_ROUTES = [
+        'customer' => 'customer.dashboard',
+        'vendor' => 'vendor.dashboard',
+        'admin' => 'admin.dashboard',
+        'superadmin' => 'superadmin.dashboard',
+    ];
+
+    /** Roles a visitor can pick when signing up (shown with the RoleSelector design). */
+    public const REGISTRATION_ROLES = [
+        ['id' => 'customer', 'icon' => '🎉', 'label' => 'Customer', 'desc' => 'Book services for my events'],
+        ['id' => 'vendor', 'icon' => '🏪', 'label' => 'Vendor', 'desc' => 'List my event business'],
+    ];
+
     protected $fillable = [
         'name',
         'email',
@@ -66,6 +80,30 @@ class User extends Authenticatable
     public function hasRole(string ...$roles): bool
     {
         return in_array($this->role, $roles, true);
+    }
+
+    public function dashboardUrl(): string
+    {
+        return route(self::DASHBOARD_ROUTES[$this->role] ?? 'home');
+    }
+
+    /**
+     * False when the URL sits in another role's area (/customer, /vendor, /admin, /superadmin),
+     * so a stale "intended" URL can't bounce someone into a 403 after logging in.
+     */
+    public function canVisit(string $url): bool
+    {
+        $area = explode('/', trim((string) parse_url($url, PHP_URL_PATH), '/'))[0];
+
+        return ! in_array($area, self::ROLES, true) || $area === $this->role;
+    }
+
+    /** "Maria Santos" → "MS" */
+    public function initials(): string
+    {
+        preg_match_all('/\b\p{L}/u', $this->name, $letters);
+
+        return mb_strtoupper(implode('', array_slice($letters[0], 0, 2))) ?: '?';
     }
 
     public function scopeRole(Builder $query, string $role): void

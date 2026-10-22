@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\RegistersUsers;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -15,56 +18,59 @@ class RegisterController extends Controller
     | Register Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
+    | Creates customer and vendor accounts. A vendor sign-up also creates an
+    | unverified vendors row that the super admin approves later.
     |
     */
 
     use RegistersUsers;
 
-    /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/';
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest');
     }
 
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
-    protected function validator(array $data)
+    public function showRegistrationForm(): View
     {
-        return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        return view('auth.register', [
+            'roles' => User::REGISTRATION_ROLES,
+            'role' => old('role', request('role') === 'vendor' ? 'vendor' : 'customer'),
         ]);
     }
 
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @return User
-     */
-    protected function create(array $data)
+    public function register(RegisterRequest $request): RedirectResponse
     {
-        return User::create([
+        $user = DB::transaction(fn () => $this->create($request->validated()));
+
+        event(new Registered($user));
+        $this->guard()->login($user);
+        $request->session()->regenerate();
+
+        return redirect()->to($user->dashboardUrl())->with('status', $user->hasRole('vendor')
+            ? 'Welcome to Eventlynk! Your vendor account is awaiting verification.'
+            : 'Welcome to Eventlynk!');
+    }
+
+    protected function create(array $data): User
+    {
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'phone' => $data['phone'],
+            'password' => $data['password'], // hashed by the User model cast
+            'role' => $data['role'],
+            'is_active' => true,
         ]);
+
+        if ($user->hasRole('vendor')) {
+            // Business details are completed later; the name is a placeholder until then.
+            $user->vendor()->create([
+                'business_name' => $data['name'],
+                'contact_number' => $data['phone'],
+                'is_verified' => false,
+            ]);
+        }
+
+        return $user;
     }
 }

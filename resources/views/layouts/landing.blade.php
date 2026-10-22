@@ -13,10 +13,25 @@
                 <button type="button" data-href="{{ route('services.index') }}">Browse Services</button>
                 <button type="button" data-open-modal="landing-how" data-close-menu>How It Works</button>
                 <button type="button" data-open-modal="landing-about" data-close-menu>About Us</button>
+                @auth
+                    <button type="button" class="mobile-only" data-href="{{ auth()->user()->dashboardUrl() }}">Dashboard</button>
+                    <button type="button" class="mobile-only" data-href="{{ route('profile.edit') }}">Profile</button>
+                    <form method="POST" action="{{ route('logout') }}" class="mobile-only">
+                        @csrf
+                        <button type="submit">Log out</button>
+                    </form>
+                @else
+                    <button type="button" class="mobile-only" data-href="{{ route('login') }}">Log in</button>
+                    <button type="button" class="mobile-only" data-href="{{ route('register') }}">Sign up free</button>
+                @endauth
             </nav>
             <div class="landing-auth">
-                <button type="button" class="text-button" data-href="{{ route('login') }}">Log in</button>
-                <button type="button" class="gold-button small" data-href="{{ route('register') }}">Sign up free</button>
+                @auth
+                    <x-user-menu />
+                @else
+                    <button type="button" class="text-button" data-href="{{ route('login') }}">Log in</button>
+                    <button type="button" class="gold-button small" data-href="{{ route('register') }}">Sign up free</button>
+                @endauth
             </div>
             <button type="button" class="menu-button" data-menu-toggle aria-label="Toggle navigation" aria-expanded="false">
                 <span></span>

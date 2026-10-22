@@ -5,6 +5,7 @@
 @section('main_style', 'flex: 1; overflow-y: auto; padding: 24px;')
 
 @php
+    $user = auth()->user();
     $card = 'background: #fff; border-radius: 10px; border: 1px solid #e8dfd0; overflow: hidden;';
     $cardHead = 'padding: 16px 18px; border-bottom: 1px solid #e8dfd0;';
     $cardTitle = "font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #1a110a; margin: 0;";
@@ -39,8 +40,8 @@
     <x-slot:profile>
         <div data-sidebar-open-only style="padding: 14px 14px; border-bottom: 1px solid #c9a84c22; text-align: center;">
             <div style="width: 44px; height: 44px; border-radius: 50%; background: #c9a84c22; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; font-size: 18px; margin: 0 auto 8px;">🛡</div>
-            <div style="color: #f5f0e8; font-size: 13px; font-weight: 600;">Owner / Admin</div>
-            <div style="color: #9c8f7a; font-size: 11px; margin-top: 2px;">admin@eventservices.ph</div>
+            <div style="color: #f5f0e8; font-size: 13px; font-weight: 600;">{{ $user->name }}</div>
+            <div style="color: #9c8f7a; font-size: 11px; margin-top: 2px;">{{ $user->email }}</div>
         </div>
     </x-slot:profile>
 </x-dashboard.sidebar>

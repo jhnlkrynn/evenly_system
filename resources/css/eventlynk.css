@@ -3696,3 +3696,271 @@ button:not(:disabled):active {
 .role-option.is-selected .role-option-label {
   color: #a07a2a;
 }
+
+/* ------------------------------------------------------------------
+ * Signed-in user menu (landing + Browse headers)
+ * ------------------------------------------------------------------ */
+.user-menu {
+  position: relative;
+}
+
+.user-menu .user-menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 12px 4px 4px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 999px;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: border-color 0.2s ease;
+}
+
+.user-menu-toggle:hover,
+.user-menu-toggle[aria-expanded='true'] {
+  border-color: rgb(212 168 66 / 70%);
+}
+
+.user-menu-avatar {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #d4a842;
+  color: #17100c;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.user-menu-name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu-caret {
+  color: rgb(255 255 255 / 55%);
+  font-size: 10px;
+}
+
+.user-menu-list {
+  min-width: 210px;
+  padding: 6px;
+  border: 1px solid #e4d8c7;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 44px rgb(0 0 0 / 24%);
+  z-index: 60;
+}
+
+.user-menu-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid #eee7dd;
+  color: #17100c;
+  font-size: 12px;
+}
+
+.user-menu-header small {
+  color: #7c7067;
+  font-size: 10px;
+}
+
+.user-menu .user-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #17100c;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.user-menu .user-menu-item:hover,
+.user-menu .user-menu-item:focus-visible {
+  background: #f5f1e8;
+  color: #89661f;
+}
+
+/* Account links inside the landing page's mobile menu (the header buttons are hidden there). */
+.landing-links .mobile-only {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .landing-links .mobile-only {
+    display: block;
+  }
+
+  .landing-links form.mobile-only button {
+    width: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Account pages (profile) — booking-flow look: dark bar, cream page
+ * ------------------------------------------------------------------ */
+.account-page {
+  --auth-ink: #17100c;
+  --auth-paper: #f5f0e6;
+  --auth-gold: #b78a2f;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f1e8;
+  color: #17100c;
+  font-family: 'Inter', sans-serif;
+}
+
+.account-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.account-header-actions > button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgb(255 255 255 / 72%);
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.account-header-actions > button:hover {
+  color: #c69b3c;
+}
+
+.account-shell {
+  width: min(760px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 46px 0 72px;
+}
+
+.account-shell > h1 {
+  margin: 0 0 30px;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.3rem, 5vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.account-card {
+  margin-bottom: 20px;
+  padding: 28px;
+  border: 1px solid #ded5c8;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.account-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.account-card-heading h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.account-card-heading p {
+  margin: 0;
+  color: #776d64;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.account-avatar {
+  width: 58px;
+  height: 58px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 2px solid #c69b3c;
+  border-radius: 50%;
+  background: #17100c;
+  color: #c69b3c;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.account-role {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fbf3dc;
+  color: #6f5117;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.account-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.phone-field:has(input:disabled) {
+  background: #f5f1e8;
+}
+
+.phone-field input:disabled {
+  color: #776d64;
+}
+
+.auth-field small {
+  display: block;
+  margin-top: 6px;
+  color: #776d64;
+  font-size: 10px;
+}
+
+.account-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.account-actions .auth-submit {
+  width: auto;
+  min-height: 47px;
+  padding: 0 26px;
+}
+
+@media (max-width: 640px) {
+  .account-header-actions > button {
+    display: none;
+  }
+
+  .account-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .account-card {
+    padding: 20px;
+  }
+
+  .account-actions .auth-submit {
+    width: 100%;
+  }
+}

@@ -6,6 +6,7 @@
 @section('main_style', 'flex: 1; padding: 28px; overflow-y: auto;')
 
 @php
+    $user = auth()->user();
     $card = 'background: #fff; border-radius: 12px; border: 1px solid #e8dfd0;';
     $cardTitle = "font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #1a110a;";
     $th = 'text-align: left; font-size: 11px; font-weight: 600; color: #9c8f7a; text-transform: uppercase;';
@@ -49,7 +50,7 @@
         @if ($openDisputes > 0)
             <button type="button" data-tab-link="disputes" style="padding: 6px 14px; border-radius: 6px; background: #fce4ec; border: none; color: #c62828; font-size: 12px; font-weight: 600; cursor: pointer;">⚠ {{ $openDisputes }} Open {{ $openDisputes === 1 ? 'Dispute' : 'Disputes' }}</button>
         @endif
-        <div style="width: 36px; height: 36px; border-radius: 50%; background: #1a110a; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-weight: 700; font-size: 14px;">SA</div>
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #1a110a; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-weight: 700; font-size: 14px;">{{ $user->initials() }}</div>
     </div>
 </header>
 @endsection

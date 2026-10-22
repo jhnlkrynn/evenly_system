@@ -49,16 +49,19 @@
     </nav>
 
     <div style="padding: {{ $footerPadding }}; border-top: 1px solid #c9a84c22;">
-        @if ($variant === 'super')
-            <button type="button" class="dash-super-logout" data-href="{{ route('home') }}">
-                <span>🚪</span>
-                <span data-sidebar-open-only>{{ $logoutLabel }}</span>
-            </button>
-        @else
-            <button type="button" class="dash-logout-btn" data-href="{{ route('home') }}">
-                <span style="font-size: var(--nav-icon);">🚪</span>
-                <span data-sidebar-open-only>{{ $logoutLabel }}</span>
-            </button>
-        @endif
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            @if ($variant === 'super')
+                <button type="submit" class="dash-super-logout">
+                    <span>🚪</span>
+                    <span data-sidebar-open-only>{{ $logoutLabel }}</span>
+                </button>
+            @else
+                <button type="submit" class="dash-logout-btn">
+                    <span style="font-size: var(--nav-icon);">🚪</span>
+                    <span data-sidebar-open-only>{{ $logoutLabel }}</span>
+                </button>
+            @endif
+        </form>
     </div>
 </aside>

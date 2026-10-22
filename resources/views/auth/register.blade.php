@@ -4,15 +4,12 @@
 @section('page_class', 'signup-page')
 @section('panel_class', 'signup-form-panel')
 
-@php($role = request('role') === 'vendor' ? 'vendor' : 'customer')
-
 @section('story')
     @include('auth.partials.signup-story')
 @endsection
 
 @section('form')
-{{-- Static phase: validation and the success message run client-side (resources/js/eventlynk/auth.js). --}}
-<form class="auth-form signup-form" method="POST" action="{{ route('register') }}" data-demo-signup data-login-url="{{ route('login') }}">
+<form class="auth-form signup-form" method="POST" action="{{ route('register') }}" data-signup novalidate>
     @csrf
     <button type="button" class="auth-back" data-href="{{ route('home') }}">
         ← <span>Back to<br>home</span>
@@ -25,22 +22,11 @@
         </p>
     </div>
 
-    <fieldset class="account-choice" data-account-choice>
-        <legend>I want to</legend>
-        <label class="{{ $role === 'customer' ? 'selected' : '' }}">
-            <input type="radio" name="role" value="customer" @checked($role === 'customer')>
-            <span>
-                <strong>Book services</strong>
-                <small>For my own events</small>
-            </span>
-        </label>
-        <label class="{{ $role === 'vendor' ? 'selected' : '' }}">
-            <input type="radio" name="role" value="vendor" @checked($role === 'vendor')>
-            <span>
-                <strong>Offer services</strong>
-                <small>List my business as a vendor</small>
-            </span>
-        </label>
+    <fieldset class="account-choice">
+        <legend>I want to sign up as</legend>
+        <div style="grid-column: 1 / -1;">
+            <x-role-selector :roles="$roles" :value="$role" />
+        </div>
     </fieldset>
 
     <div class="auth-social-grid signup-socials">
@@ -54,7 +40,7 @@
 
     <label class="auth-field">
         <span>Full name</span>
-        <input name="name" value="{{ old('name') }}" placeholder="Juan dela Cruz" autocomplete="name" required>
+        <input name="name" value="{{ old('name') }}" placeholder="Juan dela Cruz" autocomplete="name" maxlength="255" required>
     </label>
     <div class="signup-field-row">
         <label class="auth-field">
@@ -64,15 +50,14 @@
         <label class="auth-field">
             <span>Mobile number</span>
             <div class="phone-field">
-                <span>+63</span>
-                <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="917 123 4567" autocomplete="tel-national" required>
+                <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="09XX XXX XXXX" autocomplete="tel-national" inputmode="numeric" required>
             </div>
         </label>
     </div>
     <label class="auth-field">
         <span>Password</span>
         <div class="password-field">
-            <input type="password" name="password" placeholder="At least 8 characters" autocomplete="new-password" required data-strength-input>
+            <input type="password" name="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required data-strength-input>
             <button type="button" data-toggle-password>Show</button>
         </div>
     </label>
@@ -83,18 +68,26 @@
         <strong data-strength-label>Keep going</strong>
         · Use 8+ characters with a number and symbol.
     </p>
+    <label class="auth-field">
+        <span>Confirm password</span>
+        <div class="password-field">
+            <input type="password" name="password_confirmation" placeholder="Type your password again" autocomplete="new-password" required>
+            <button type="button" data-toggle-password>Show</button>
+        </div>
+    </label>
 
     <label class="check-label terms-check">
-        <input type="checkbox" name="terms" data-terms>
+        <input type="checkbox" name="terms" value="1" @checked(old('terms'))>
         <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</span>
     </label>
-    <div class="auth-message error" data-signup-error hidden></div>
-    <div class="auth-message success" data-signup-success hidden>Account created. Redirecting to login…</div>
-    <button class="auth-submit" type="submit" data-signup-submit>Create account</button>
+
+    @include('auth.partials.errors')
+
+    <button class="auth-submit" type="submit">Create account</button>
     <p class="auth-note" data-role-note
         data-note-customer="Your account is ready for browsing and booking services."
-        data-note-vendor="We’ll ask for your business details on the next step.">
-        {{ $role === 'vendor' ? 'We’ll ask for your business details on the next step.' : 'Your account is ready for browsing and booking services.' }}
+        data-note-vendor="Your vendor account will be reviewed by Eventlynk before it appears to customers.">
+        {{ $role === 'vendor' ? 'Your vendor account will be reviewed by Eventlynk before it appears to customers.' : 'Your account is ready for browsing and booking services.' }}
     </p>
 </form>
 @endsection

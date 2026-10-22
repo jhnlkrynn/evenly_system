@@ -6,6 +6,9 @@
 @section('main_class', 'vendor-main app-dashboard-main')
 
 @php
+    $user = auth()->user();
+    // Every vendor account has a vendors row (created at sign-up or by the seeder).
+    $business = $user->vendor ?? new \App\Models\Vendor(['business_name' => $user->name]);
     $card = 'background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; overflow: hidden;';
     $cardTitle = "font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #1a110a; margin: 0;";
     $th = 'text-align: left; font-weight: 600; color: #9c8f7a;';
@@ -28,9 +31,9 @@
     </x-slot:brand>
     <x-slot:profile>
         <div data-sidebar-open-only style="padding: 20px 16px; border-bottom: 1px solid #c9a84c22; text-align: center;">
-            <div style="width: 56px; height: 56px; border-radius: 50%; background: #3d2510; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: #c9a84c; margin: 0 auto 10px;">GC</div>
-            <div style="color: #f5f0e8; font-size: 14px; font-weight: 600;">Gourmet Creations</div>
-            <div style="color: #9c8f7a; font-size: 12px; margin-top: 3px;">gourmet@events.ph</div>
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: #3d2510; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: #c9a84c; margin: 0 auto 10px;">{{ $user->initials() }}</div>
+            <div style="color: #f5f0e8; font-size: 14px; font-weight: 600;">{{ $business->short_name ?? $business->business_name }}</div>
+            <div style="color: #9c8f7a; font-size: 12px; margin-top: 3px;">{{ $user->email }}</div>
             <span style="display: inline-block; margin-top: 8px; padding: 3px 10px; background: #c9a84c22; border: 1px solid #c9a84c44; border-radius: 20px; font-size: 11px; color: #c9a84c;">⭐ Top Rated Vendor</span>
         </div>
     </x-slot:profile>
@@ -41,12 +44,12 @@
 <header class="vendor-header app-dashboard-header" style="background: #fff; border-bottom: 1px solid #e8dfd0; padding: 0 28px; height: 64px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
     <div>
         <h2 data-dashboard-title style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a110a; margin: 0;">Dashboard</h2>
-        <p style="font-size: 12px; color: #9c8f7a; margin: 0;">Vendor Portal · Gourmet Creations Catering</p>
+        <p style="font-size: 12px; color: #9c8f7a; margin: 0;">Vendor Portal · {{ $business->business_name }}</p>
     </div>
     <div style="display: flex; align-items: center; gap: 14px;">
         <button type="button" class="vendor-add-service" data-tab-link="services" style="padding: 8px 20px; border-radius: 8px; background: #c9a84c; border: none; color: #1a110a; font-size: 13px; font-weight: 600; cursor: pointer;">+ Add Service</button>
         <button type="button" aria-label="Notifications" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b5a47;">🔔</button>
-        <div style="width: 36px; height: 36px; border-radius: 50%; background: #3d2510; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 13px; font-weight: 700; cursor: pointer;">GC</div>
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #3d2510; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 13px; font-weight: 700; cursor: pointer;">{{ $user->initials() }}</div>
     </div>
 </header>
 @endsection
@@ -383,13 +386,13 @@
 <div data-panel="profile" hidden style="max-width: 640px;">
     <div style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 28px;">
         <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid #e8dfd0;">
-            <div style="width: 72px; height: 72px; border-radius: 50%; background: #3d2510; border: 3px solid #c9a84c; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #c9a84c;">GC</div>
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: #3d2510; border: 3px solid #c9a84c; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #c9a84c;">{{ $user->initials() }}</div>
             <div>
-                <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a110a; margin-bottom: 4px;">Gourmet Creations Catering</h3>
+                <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a110a; margin-bottom: 4px;">{{ $business->business_name }}</h3>
                 <div style="font-size: 13px; color: #9c8f7a;">Vendor · 8+ years on Eventlynk · ⭐ 4.9</div>
             </div>
         </div>
-        @foreach ([['Business Name', 'Gourmet Creations Catering'], ['Email', 'gourmet@events.ph'], ['Phone', '+63 928 456 7890'], ['Location', 'Quezon City, Metro Manila'], ['Service Category', 'Catering']] as [$fieldLabel, $fieldValue])
+        @foreach ([['Business Name', $business->business_name], ['Email', $user->email], ['Phone', $business->contact_number ?? $user->phone], ['Location', 'Quezon City, Metro Manila'], ['Service Category', 'Catering']] as [$fieldLabel, $fieldValue])
             <div style="margin-bottom: 18px;">
                 <label style="display: block; font-size: 13px; font-weight: 500; color: #6b5a47; margin-bottom: 7px;">{{ $fieldLabel }}</label>
                 <input value="{{ $fieldValue }}" style="width: 100%; border: 1px solid #ddd5c8; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #1a110a; outline: none; box-sizing: border-box; background: #faf8f4;">
