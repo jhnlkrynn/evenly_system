@@ -1,73 +1,93 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
+@section('title', 'Log in · Eventlynk')
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Login') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+@section('story')
+<section class="auth-story login-story">
+    <x-brand class="auth-brand" aria-label="Back to Eventlynk home" />
+    <div class="auth-photo-frame">
+        <img src="{{ asset('images/image-4.png') }}" alt="Elegant event reception decoration">
+    </div>
+    <div class="auth-story-copy">
+        <h2>Welcome back.<br><em>Your events are waiting.</em></h2>
+        <p>
+            Pick up where you left off — check booking status, message vendors,
+            and confirm your next date.
+        </p>
+        <div class="auth-pills">
+            <span>Real-time booking status</span>
+            <span>Verified vendors</span>
+            <span>Vendor analytics</span>
         </div>
     </div>
-</div>
+</section>
+@endsection
+
+@section('form')
+{{-- Static phase: the "Demo destination" select decides where the form goes (see resources/js/eventlynk/auth.js). --}}
+@php
+    $destinations = [
+        'customer' => route('customer.dashboard'),
+        'vendor' => route('vendor.dashboard'),
+        'admin' => route('admin.dashboard'),
+        'superadmin' => route('superadmin.dashboard'),
+    ];
+@endphp
+<form class="auth-form" method="POST" action="{{ route('login') }}" data-demo-login data-destinations="{{ json_encode($destinations) }}">
+    @csrf
+    <button type="button" class="auth-back" data-href="{{ route('home') }}">
+        ← <span>Back to<br>home</span>
+    </button>
+    <div class="auth-heading">
+        <h1>Log in</h1>
+        <p>
+            New to Eventlynk?
+            <button type="button" data-href="{{ route('register') }}">Create an account</button>
+        </p>
+    </div>
+
+    <div class="auth-social-grid login-socials">
+        <button type="button" class="wide">Continue with Google</button>
+        <button type="button">Facebook</button>
+        <button type="button">Apple</button>
+    </div>
+
+    <div class="auth-divider">
+        <span>or with email</span>
+    </div>
+
+    <label class="auth-field">
+        <span>Email</span>
+        <input type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" autocomplete="email" required>
+    </label>
+
+    <label class="auth-field">
+        <span class="field-label-row">
+            Password <button type="button">Forgot password?</button>
+        </span>
+        <div class="password-field">
+            <input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" data-toggle-password>Show</button>
+        </div>
+    </label>
+
+    <div class="auth-form-row">
+        <label class="check-label">
+            <input type="checkbox" name="remember" checked>
+            <span>Keep me logged in</span>
+        </label>
+        <label class="role-select">
+            <span>Demo destination</span>
+            <select name="demo_role" data-demo-role>
+                <option value="customer">Customer</option>
+                <option value="vendor">Vendor</option>
+                <option value="admin">Admin</option>
+                <option value="superadmin">Super Admin</option>
+            </select>
+        </label>
+    </div>
+
+    <button class="auth-submit" type="submit">Log in</button>
+    <p class="auth-note">We’ll take you to the selected dashboard for this interactive mockup.</p>
+</form>
 @endsection

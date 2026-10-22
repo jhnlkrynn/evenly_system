@@ -1,8 +1,10 @@
-// Fonts
-@import url('https://fonts.bunny.net/css?family=Nunito');
+@use 'sass:meta';
 
-// Variables
-@import 'variables';
+// Bootstrap lives in its own cascade layer so the Eventlynk design
+// (resources/css/eventlynk.css, unlayered) always takes precedence, while the
+// grid, utilities and JS components stay available underneath it.
+@layer bootstrap, base;
 
-// Bootstrap
-@import 'bootstrap/scss/bootstrap';
+@layer bootstrap {
+    @include meta.load-css('bootstrap/scss/bootstrap');
+}

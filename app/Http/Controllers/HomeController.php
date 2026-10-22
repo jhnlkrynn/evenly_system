@@ -2,27 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Support\MockData;
+use Illuminate\Contracts\View\View;
 
 class HomeController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
+     * Landing page.
      */
-    public function __construct()
+    public function index(): View
     {
-        $this->middleware('auth');
-    }
-
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function index()
-    {
-        return view('home');
+        return view('home', [
+            'services' => MockData::landingServices(),
+            'steps' => MockData::STEPS,
+            'reviews' => MockData::REVIEWS,
+        ]);
     }
 }
