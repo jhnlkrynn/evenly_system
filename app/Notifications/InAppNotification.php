@@ -17,6 +17,7 @@ class InAppNotification extends Notification
         public string $message,
         public string $icon = '🔔',
         public ?string $bookingCode = null,
+        public ?string $url = null,
     ) {}
 
     /** @return array<int, string> */
@@ -32,6 +33,7 @@ class InAppNotification extends Notification
             'icon' => $this->icon,
             'message' => $this->message,
             'booking_code' => $this->bookingCode,
+            'url' => $this->url,
         ];
     }
 }

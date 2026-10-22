@@ -12,6 +12,8 @@ use App\Models\Booking;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Notifications\BookingNotification;
+use App\Notifications\VendorVerificationNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 
@@ -22,6 +24,8 @@ class AdminController extends Controller
         $this->authorize('verify', $vendor);
         $vendor->update(['is_verified' => $request->status === 'Approved', 'verification_reason' => $request->reason]);
         ActivityLog::record($request->user()->id, 'vendor.verification', $request->status.' '.$vendor->business_name);
+        $vendor->load('user');
+        $vendor->user->notify(new VendorVerificationNotification($vendor, strtolower($request->status)));
 
         return back()->with('success', 'Vendor verification updated.');
     }
@@ -49,6 +53,8 @@ class AdminController extends Controller
         $this->authorize('changeStatus', $booking);
         $booking->update(['status' => $request->string('status')->toString()]);
         ActivityLog::record($request->user()->id, 'booking.status', "{$booking->booking_code} status changed to {$booking->status}");
+        $booking->load('customer');
+        $booking->customer->notify(new BookingNotification($booking, strtolower($booking->status)));
 
         return back()->with('success', 'Booking status updated.');
     }

@@ -26,6 +26,8 @@
 
     @yield('modals')
 
+    @include('notifications.dropdown')
+
     <script type="application/json" data-palettes>@json(\App\Support\MockData::PALETTES)</script>
 
     <div data-toast hidden

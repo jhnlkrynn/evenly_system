@@ -32,11 +32,11 @@ final class DatabaseDashboardData
 
         $upcoming = array_values(array_filter($bookings, fn (array $booking): bool => in_array($booking['status'], ['Confirmed', 'Pending'], true)));
         $completed = array_values(array_filter($bookings, fn (array $booking): bool => $booking['status'] === 'Completed'));
-        $notifications = $models->take(8)->map(fn (Booking $booking): array => [
-            'icon' => $booking->status === 'Confirmed' ? '✅' : ($booking->status === 'Completed' ? '🎉' : '📅'),
-            'text' => sprintf('Booking %s with %s is %s.', $booking->booking_code, $booking->vendor->business_name, strtolower($booking->status)),
-            'time' => $booking->created_at->diffForHumans(),
-            'unread' => $booking->status === 'Pending',
+        $notifications = $customer->notifications()->latest()->limit(8)->get()->map(fn ($notification): array => [
+            'icon' => data_get($notification->data, 'icon', '🔔'),
+            'text' => data_get($notification->data, 'message', 'Notification'),
+            'time' => $notification->created_at->diffForHumans(),
+            'unread' => $notification->read_at === null,
         ])->values()->all();
         $tracked = array_merge(
             array_values(array_filter($bookings, fn (array $booking): bool => $booking['status'] !== 'Completed')),
@@ -119,6 +119,12 @@ final class DatabaseDashboardData
         })->all();
         $statusCounts = collect(Booking::STATUSES)->mapWithKeys(fn (string $status): array => [$status => $bookingModels->where('status', $status)->count()]);
         $categoryCounts = $bookingModels->groupBy(fn (Booking $booking): string => $booking->service?->category?->name ?? 'Other')->map->count();
+        $notifications = $vendor->user->notifications()->latest()->limit(8)->get()->map(fn ($notification): array => [
+            'icon' => data_get($notification->data, 'icon', '🔔'),
+            'text' => data_get($notification->data, 'message', 'Notification'),
+            'time' => $notification->created_at->diffForHumans(),
+            'unread' => $notification->read_at === null,
+        ])->values()->all();
 
         return [
             'navItems' => [
@@ -163,6 +169,8 @@ final class DatabaseDashboardData
                 'status' => $booking->status,
                 'customer' => $booking->customer->name,
             ])->values()->all(),
+            'notifications' => $notifications,
+            'unread' => collect($notifications)->where('unread', true)->count(),
         ];
     }
 }

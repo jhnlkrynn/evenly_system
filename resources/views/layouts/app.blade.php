@@ -35,6 +35,7 @@
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">@include('notifications.dropdown', ['inNavbar' => true])</li>
                         <!-- Authentication Links -->
                         @guest
                             @if (Route::has('login'))

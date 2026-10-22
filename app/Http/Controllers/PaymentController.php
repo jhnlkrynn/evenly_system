@@ -6,6 +6,7 @@ use App\Http\Requests\Booking\StorePaymentRequest;
 use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Notifications\PaymentReceivedNotification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -69,6 +70,9 @@ class PaymentController extends Controller
 
             return $payment;
         });
+
+        $payment->load('booking.vendor.user');
+        $payment->booking->vendor->user->notify(new PaymentReceivedNotification($payment));
 
         return redirect()->route('bookings.show', $booking)->with('status', sprintf(
             'Demo payment of ₱%s recorded via %s.', number_format((float) $payment->amount, 2), $payment->method,

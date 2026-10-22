@@ -6,6 +6,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
@@ -31,6 +32,11 @@ Route::get('/vendors/{vendor}/booked-dates', [VendorController::class, 'bookedDa
 
 // Every signed-in role
 Route::middleware(['auth', 'role:customer,vendor,admin,superadmin'])->group(function () {
+    Route::get('/notifications', [NotificationsController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [NotificationsController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::patch('/notifications/{notification}/read', [NotificationsController::class, 'read'])->name('notifications.read');
+    Route::get('/notifications/{notification}/read', [NotificationsController::class, 'read'])->name('notifications.read.get');
+    Route::patch('/notifications/read-all', [NotificationsController::class, 'readAll'])->name('notifications.read-all');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

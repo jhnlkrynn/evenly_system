@@ -9,6 +9,7 @@ use App\Models\Barangay;
 use App\Models\Booking;
 use App\Models\Service;
 use App\Models\Vendor;
+use App\Notifications\BookingNotification;
 use App\Support\BookingPricing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -119,6 +120,9 @@ class BookingController extends Controller
             return $booking;
         });
 
+        $booking->load('vendor.user');
+        $booking->vendor->user->notify(new BookingNotification($booking));
+
         return redirect()->route('bookings.show', $booking)
             ->with('booked', true)
             ->with('preferred_method', $data['payment_method'] ?? 'GCash');
@@ -141,6 +145,7 @@ class BookingController extends Controller
     public function cancel(CancelBookingRequest $request, Booking $booking): RedirectResponse
     {
         $booking->update(['status' => 'Cancelled']);
+        $booking->customer->notify(new BookingNotification($booking, 'cancelled'));
         ActivityLog::record($request->user()->id, 'booking_cancelled', 'Cancelled '.$booking->booking_code.'.');
 
         return back()->with('status', 'Booking '.$booking->booking_code.' was cancelled.');

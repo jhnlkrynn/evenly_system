@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use App\Notifications\VendorRegistrationNotification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -43,6 +44,9 @@ class RegisterController extends Controller
         $user = DB::transaction(fn () => $this->create($request->validated()));
 
         event(new Registered($user));
+        if ($user->hasRole('vendor')) {
+            User::whereIn('role', ['admin', 'superadmin'])->where('is_active', true)->get()->each->notify(new VendorRegistrationNotification($user));
+        }
         $this->guard()->login($user);
         $request->session()->regenerate();
 

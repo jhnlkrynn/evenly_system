@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Booking\UpdateBookingStatusRequest;
 use App\Models\ActivityLog;
 use App\Models\Booking;
+use App\Notifications\BookingNotification;
 use Illuminate\Http\RedirectResponse;
 
 class VendorBookingController extends Controller
@@ -19,6 +20,8 @@ class VendorBookingController extends Controller
 
         abort_unless(in_array($status, $allowed[$booking->status] ?? [], true), 422, 'That booking transition is not allowed.');
         $booking->update(['status' => $status]);
+        $booking->load('customer');
+        $booking->customer->notify(new BookingNotification($booking, strtolower($status)));
 
         ActivityLog::record($request->user()->id, 'booking_status_updated', sprintf(
             '%s changed to %s by vendor.', $booking->booking_code, $status,

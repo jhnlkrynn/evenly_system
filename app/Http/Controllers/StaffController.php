@@ -8,6 +8,7 @@ use App\Http\Requests\Staff\UpdateStaffRequest;
 use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Staff;
+use App\Notifications\StaffAssignedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -69,6 +70,8 @@ class StaffController extends Controller
         });
 
         ActivityLog::record($request->user()->id, 'staff_assigned', 'Updated staff assignment for '.$booking->booking_code.'.');
+        $booking->load('customer');
+        $booking->customer->notify(new StaffAssignedNotification($booking));
 
         return back()->with('status', 'Staff assignment saved.');
     }

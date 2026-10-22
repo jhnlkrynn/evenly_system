@@ -10,6 +10,7 @@ import { initBrowse } from './eventlynk/browse';
 import { initBooking } from './eventlynk/booking';
 import { initAuth } from './eventlynk/auth';
 import { initDashboard } from './eventlynk/dashboard';
+import { initNotifications } from './eventlynk/notifications';
 
 // Expose to inline scripts in Blade views (dropdowns/modals, charts & reports).
 window.bootstrap = bootstrap;
@@ -22,3 +23,4 @@ initBrowse();
 initBooking();
 initAuth();
 initDashboard();
+initNotifications();

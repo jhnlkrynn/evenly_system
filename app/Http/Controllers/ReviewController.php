@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Review\StoreReviewRequest;
 use App\Models\ActivityLog;
 use App\Models\Booking;
+use App\Notifications\ReviewReceivedNotification;
 use Illuminate\Http\RedirectResponse;
 
 class ReviewController extends Controller
@@ -23,6 +24,8 @@ class ReviewController extends Controller
             $booking->vendor->business_name,
             $booking->booking_code,
         ));
+        $booking->load('vendor.user');
+        $booking->vendor->user->notify(new ReviewReceivedNotification($review));
 
         return back()->with('status', 'Thanks — your review was saved.');
     }
