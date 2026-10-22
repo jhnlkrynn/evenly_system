@@ -187,6 +187,13 @@ body {
 }
 
 @media (max-width: 767px) {
+    .app-dashboard-main { padding: 16px !important; overflow-x: hidden; }
+    .app-dashboard-header { padding-left: 16px !important; padding-right: 16px !important; }
+    .app-dashboard-main > [data-panel] > div[style*="grid-template-columns"],
+    .app-dashboard-main > [data-panel] > section[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+    .app-dashboard-main table { min-width: 640px; }
+    .app-dashboard-main > [data-panel] { overflow-x: auto; }
+    .dashboard-modal-panel { max-width: calc(100vw - 24px) !important; }
   .vendor-sidebar-open {
     position: fixed !important;
     inset: 0 auto 0 0;

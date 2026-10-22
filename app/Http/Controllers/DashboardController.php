@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 /**
  * Dashboards for each role (routes are guarded by RoleMiddleware).
- * Panels still show the prototype's sample data except the vendor's Browse tab.
+ * All operational dashboard records come from the database-backed providers.
  */
 class DashboardController extends Controller
 {

@@ -16,6 +16,7 @@
     @stack('head')
 </head>
 <body>
+    @include('partials.flash')
     @yield('body')
     @stack('scripts')
 </body>
