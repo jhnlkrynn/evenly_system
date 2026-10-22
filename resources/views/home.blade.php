@@ -47,11 +47,7 @@
 
             <div class="hero-visual" aria-label="Elegant Eventlynk event setup">
                 <img src="{{ asset('images/image-2.png') }}" alt="Elegant neutral wedding decoration setup">
-                <x-booking-card
-                    title="Full Package"
-                    meta="Sat, 12 Dec · Calayo, Nasugbu"
-                    note="Vendor confirmed · Setup team assigned"
-                />
+                <x-booking-card :booking="$latestBooking" />
             </div>
         </div>
     </section>

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Vendor;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class VendorController extends Controller
 {
@@ -25,10 +28,29 @@ class VendorController extends Controller
         ]);
     }
 
+    /** Dates this vendor is already booked (today onwards), for the booking calendar. */
+    public function bookedDates(Vendor $vendor): JsonResponse
+    {
+        abort_unless($vendor->loadMissing('user')->isListed(), 404);
+
+        return response()->json([
+            'vendor_id' => $vendor->id,
+            'today' => now()->toDateString(),
+            'booked' => $vendor->bookings()
+                ->holdingDate()
+                ->whereDate('event_date', '>=', now()->toDateString())
+                ->orderBy('event_date')
+                ->pluck('event_date')
+                ->map(fn ($date) => Carbon::parse($date)->toDateString())
+                ->unique()
+                ->values(),
+        ]);
+    }
+
     /**
      * Reviews with their customer and booking, plus the rating summary.
      *
-     * @return array{reviews: \Illuminate\Support\Collection, rating: ?float, reviewCount: int, distribution: array<int,int>}
+     * @return array{reviews: Collection, rating: ?float, reviewCount: int, distribution: array<int,int>}
      */
     public static function reviewData(Vendor $vendor): array
     {

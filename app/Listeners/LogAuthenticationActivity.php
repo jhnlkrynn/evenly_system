@@ -26,11 +26,6 @@ class LogAuthenticationActivity
             return;
         }
 
-        ActivityLog::create([
-            'user_id' => $user->getAuthIdentifier(),
-            'action' => $action,
-            'description' => "{$description} as {$user->role}",
-            'ip_address' => request()->ip(),
-        ]);
+        ActivityLog::record($user->getAuthIdentifier(), $action, "{$description} as {$user->role}");
     }
 }

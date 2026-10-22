@@ -145,7 +145,7 @@
                     @if ($results->hasPages())
                         <nav class="browse-pagination" aria-label="Results pages">{{ $results->links('pagination.eventlynk') }}</nav>
                     @endif
-                    <button type="button" data-href="{{ route('bookings.create') }}">Can’t find what you need? Tell us about your event →</button>
+                    <button type="button" data-open-modal="browse-how">Can’t find what you need? See how booking works →</button>
                 </div>
             </div>
         </div>

@@ -58,7 +58,7 @@
                         <strong>{{ $service->formattedPrice() }}</strong>
                         <span>per {{ $service->price_unit }}</span>
                         <p>A 30% reservation fee secures your date and is deducted from your total. The balance is paid to the vendor on the event day.</p>
-                        <button type="button" data-href="{{ route('bookings.create', ['service' => $service->id]) }}">Book this service</button>
+                        <button type="button" data-href="{{ route('customer.bookings.create', ['service' => $service->id]) }}">Book this service</button>
                     </div>
                     @include('vendors.partials.card', ['vendor' => $vendor])
                 </aside>

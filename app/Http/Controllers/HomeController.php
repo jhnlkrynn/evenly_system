@@ -11,6 +11,7 @@ use App\Models\Vendor;
 use App\Support\MockData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -20,6 +21,9 @@ class HomeController extends Controller
     public function index(): View
     {
         $categories = ServiceCategory::orderBy('id')->get();
+        $latestBooking = Auth::user()?->hasRole('customer')
+            ? Auth::user()->bookings()->with(['vendor', 'service'])->latest()->first()
+            : null;
 
         return view('home', [
             'categories' => $categories,
@@ -36,6 +40,7 @@ class HomeController extends Controller
                 ->limit(3)
                 ->get(),
             'steps' => MockData::STEPS,
+            'latestBooking' => $latestBooking,
         ]);
     }
 

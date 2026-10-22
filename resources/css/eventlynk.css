@@ -4462,3 +4462,209 @@ a.vendor-market-image {
     grid-template-columns: 1fr;
   }
 }
+
+/* ------------------------------------------------------------------
+ * Booking form (database-backed): calendar states, venue input, errors
+ * ------------------------------------------------------------------ */
+.calendar-title button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendar-grid button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.calendar-grid button.booked:not(.selected) {
+  background: #ece6dc;
+  color: #8e847a;
+}
+
+.calendar-grid button.booked span {
+  text-decoration: line-through;
+}
+
+.calendar-grid button.booked.selected {
+  background: #9c302b;
+}
+
+.selected-date small.is-warning {
+  color: #9c302b;
+}
+
+.booking-field > input {
+  min-height: 43px;
+  padding: 0 12px;
+  border: 1px solid #d9d0c4;
+  border-radius: 8px;
+  outline: 0;
+  background: #fff;
+  color: var(--book-ink);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.booking-errors {
+  margin: -16px 0 24px;
+}
+
+.booking-step-error {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #e2b5b2;
+  border-radius: 8px;
+  background: #fff0ef;
+  color: #9c302b;
+  font-size: 11px;
+}
+
+/* Booking page + demo payment page */
+.booking-page .account-card h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.booking-detail-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  margin: 18px 0 0;
+}
+
+.booking-detail-list dt {
+  margin-bottom: 4px;
+  color: #786e65;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.booking-detail-list dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.booking-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.status-pill {
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-pill.is-pending,
+.status-pill.is-partial { background: #fff8e8; color: #a07a2a; }
+.status-pill.is-confirmed,
+.status-pill.is-paid { background: #e6f4ea; color: #2e7d32; }
+.status-pill.is-completed { background: #e8f0fe; color: #4a6fdc; }
+.status-pill.is-cancelled,
+.status-pill.is-unpaid { background: #fce4ec; color: #c62828; }
+
+.booking-doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.booking-doc-actions a,
+.booking-doc-actions button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #d8cfc2;
+  border-radius: 9px;
+  background: #fff;
+  color: #17100c;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.booking-doc-actions .is-primary {
+  border-color: #c69b3c;
+  background: #c69b3c;
+}
+
+.booking-doc-actions .is-dark {
+  border-color: #17100c;
+  background: #17100c;
+  color: #fff;
+}
+
+.payment-history {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.payment-history th {
+  padding: 8px 10px;
+  background: #f5f1e8;
+  color: #786e65;
+  font-size: 9px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.payment-history td {
+  padding: 10px;
+  border-top: 1px solid #eee7dd;
+}
+
+.demo-banner {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px dashed #c69b3c;
+  border-radius: 12px;
+  background: #fbf3dc;
+  color: #6f5117;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.demo-banner strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #17100c;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.payment-grid.is-two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.payment-grid label strong + small {
+  margin-top: 2px;
+}
+
+.payment-grid label .payment-amount {
+  color: #17100c;
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .booking-detail-list,
+  .payment-grid.is-two {
+    grid-template-columns: 1fr;
+  }
+}

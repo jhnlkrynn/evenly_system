@@ -1,10 +1,13 @@
 <header class="booking-header">
     <div>
         <x-brand class="booking-brand" />
-        <nav>
-            <button type="button">Need help?</button>
-            <button type="button" data-href="{{ route('home') }}">Save &amp; exit</button>
-            <span>NA</span>
-        </nav>
+        <div class="account-header-actions">
+            <button type="button" data-href="{{ route('services.index') }}">Browse services</button>
+            @auth
+                <x-user-menu />
+            @else
+                <button type="button" data-href="{{ route('login') }}">Log in</button>
+            @endauth
+        </div>
     </div>
 </header>

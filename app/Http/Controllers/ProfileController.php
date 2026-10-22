@@ -28,12 +28,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->update(['password' => $request->validated('password')]);
 
-        ActivityLog::create([
-            'user_id' => $user->id,
-            'action' => 'password_changed',
-            'description' => 'Changed account password',
-            'ip_address' => $request->ip(),
-        ]);
+        ActivityLog::record($user->id, 'password_changed', 'Changed account password');
 
         return back()->with('password_status', 'Your password has been changed.');
     }

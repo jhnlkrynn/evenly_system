@@ -18,4 +18,15 @@ class ActivityLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /** Write one entry for the current request (logins, bookings, payments, ...). */
+    public static function record(?int $userId, string $action, string $description): self
+    {
+        return self::create([
+            'user_id' => $userId,
+            'action' => $action,
+            'description' => $description,
+            'ip_address' => request()->ip(),
+        ]);
+    }
 }
