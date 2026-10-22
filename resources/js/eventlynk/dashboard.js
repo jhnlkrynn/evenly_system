@@ -326,6 +326,15 @@ function initVendor(root) {
 
 function initAdmin(root) {
     const data = JSON.parse(root.querySelector('[data-admin-bookings]').textContent);
+    const chartScript = root.querySelector('[data-admin-chart-data]');
+    const chartData = chartScript ? JSON.parse(chartScript.textContent) : null;
+    if (window.Chart && chartData) {
+        const draw = (name, config) => { const canvas = root.querySelector(`[data-admin-chart="${name}"]`); if (canvas) new window.Chart(canvas, config); };
+        draw('monthly', { type: 'line', data: { labels: chartData.monthly.map((x) => x.month), datasets: [{ label: 'Bookings', data: chartData.monthly.map((x) => x.bookings), borderColor: '#c9a84c', tension: .35 }] }, options: { responsive: true, maintainAspectRatio: false } });
+        draw('revenue', { type: 'line', data: { labels: chartData.monthly.map((x) => x.month), datasets: [{ label: 'Revenue', data: chartData.monthly.map((x) => x.revenue), borderColor: '#2e7d32', tension: .35 }] }, options: { responsive: true, maintainAspectRatio: false } });
+        draw('categories', { type: 'bar', data: { labels: chartData.categories.map((x) => x.label), datasets: [{ label: 'Bookings', data: chartData.categories.map((x) => x.value), backgroundColor: '#c9a84c' }] }, options: { responsive: true, maintainAspectRatio: false } });
+        draw('vendors', { type: 'bar', data: { labels: chartData.topVendors.map((x) => x.label), datasets: [{ label: 'Revenue', data: chartData.topVendors.map((x) => x.value), backgroundColor: '#1a110a' }] }, options: { responsive: true, maintainAspectRatio: false } });
+    }
     const peso = (value) => value.toLocaleString();
 
     const showList = () => {

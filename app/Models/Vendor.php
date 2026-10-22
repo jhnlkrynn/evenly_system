@@ -23,6 +23,7 @@ class Vendor extends Model
         'contact_number',
         'logo',
         'is_verified',
+        'verification_reason',
     ];
 
     protected function casts(): array

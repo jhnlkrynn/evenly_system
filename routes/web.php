@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\RoleSelectionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingDocumentController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\VendorBookingController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\VendorServiceController;
@@ -65,8 +67,17 @@ Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'role:vendor'])->g
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'admin'])->name('dashboard');
+    Route::patch('/vendors/{vendor}/verification', [AdminController::class, 'verifyVendor'])->name('vendors.verification');
+    Route::patch('/users/{user}/status', [AdminController::class, 'updateUserStatus'])->name('users.status');
+    Route::patch('/services/{service}/status', [AdminController::class, 'updateServiceStatus'])->name('services.status');
+    Route::patch('/bookings/{booking:booking_code}/status', [AdminController::class, 'updateBookingStatus'])->name('bookings.status');
+    Route::get('/reports/pdf', [AdminController::class, 'report'])->name('reports.pdf');
 });
 
 Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:superadmin'])->group(function () {
     Route::get('/', [DashboardController::class, 'superAdmin'])->name('dashboard');
+    Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
+    Route::patch('/admins/{user}/toggle', [SuperAdminController::class, 'toggleAdmin'])->name('admins.toggle');
+    Route::post('/categories', [SuperAdminController::class, 'storeCategory'])->name('categories.store');
+    Route::post('/barangays', [SuperAdminController::class, 'storeBarangay'])->name('barangays.store');
 });

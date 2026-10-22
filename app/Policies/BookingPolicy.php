@@ -42,9 +42,9 @@ class BookingPolicy
 
     public function changeStatus(User $user, Booking $booking): bool
     {
-        return $user->hasRole('vendor')
+        return $user->hasRole('admin', 'superadmin') || ($user->hasRole('vendor')
             && $booking->vendor_id === $user->vendor?->id
-            && in_array($booking->status, ['Pending', 'Confirmed'], true);
+            && in_array($booking->status, ['Pending', 'Confirmed'], true));
     }
 
     public function assignStaff(User $user, Booking $booking): bool

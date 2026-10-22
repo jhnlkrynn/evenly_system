@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\DashboardData;
+use App\Support\DatabaseAdminDashboardData;
 use App\Support\DatabaseDashboardData;
 use App\Support\ServiceSearch;
 use Illuminate\Contracts\View\View;
@@ -29,11 +29,11 @@ class DashboardController extends Controller
 
     public function admin(): View
     {
-        return view('dashboards.admin', DashboardData::admin());
+        return view('dashboards.admin', DatabaseAdminDashboardData::admin(request()->user()));
     }
 
     public function superAdmin(): View
     {
-        return view('dashboards.superadmin', DashboardData::superAdmin());
+        return view('dashboards.superadmin', DatabaseAdminDashboardData::superAdmin(request()->user()));
     }
 }

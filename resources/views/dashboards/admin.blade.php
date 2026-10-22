@@ -63,9 +63,15 @@
 
 @section('panels')
 <script type="application/json" data-admin-bookings>{!! json_encode($bookingState, JSON_HEX_TAG) !!}</script>
+<script type="application/json" data-admin-chart-data>{!! json_encode($chartData, JSON_HEX_TAG) !!}</script>
 
 {{-- ── OVERVIEW ── --}}
 <div data-panel="overview">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:18px;">
+        @foreach ([['monthly','Bookings per month'],['revenue','Revenue per month'],['categories','Bookings by category'],['vendors','Top vendors']] as [$chart,$title])
+            <div style="{{ $card }}padding:18px;height:220px;"><h3 style="{{ $cardTitle }}">{{ $title }}</h3><div style="height:170px;"><canvas data-admin-chart="{{ $chart }}"></canvas></div></div>
+        @endforeach
+    </div>
     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px;">
         @foreach ($kpis as $kpi)
             <x-stat-card variant="stack" :label="$kpi['label']" :value="$kpi['value']" :icon="$kpi['icon']" :color="$kpi['color']" />
@@ -522,6 +528,13 @@
     </p>
 </div>
 @endsection
+
+<div data-panel="vendors" hidden>
+    <div style="{{ $card }}"><div style="{{ $cardHead }}"><h3 style="{{ $cardTitle }}">Vendor verification</h3></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><tr><th style="{{ $th }};padding:12px">Vendor</th><th style="{{ $th }}">Status</th><th style="{{ $th }}">Actions</th></tr>@foreach($vendors as $vendor)<tr style="border-top:1px solid #f0ebe2"><td style="padding:12px">{{ $vendor['name'] }}<br><small>{{ $vendor['email'] }}</small></td><td>{{ $vendor['status'] }}</td><td style="padding:12px"><form method="POST" action="{{ route('admin.vendors.verification',$vendor['id']) }}" style="display:inline-flex;gap:6px;align-items:center">@csrf @method('PATCH')<input type="hidden" name="status" value="Approved"><button type="submit" style="padding:6px 10px;background:#2e7d32;color:#fff;border:0;border-radius:6px">Approve</button></form><form method="POST" action="{{ route('admin.vendors.verification',$vendor['id']) }}" style="display:inline-flex;gap:6px;align-items:center;margin-left:6px">@csrf @method('PATCH')<input type="hidden" name="status" value="Rejected"><input name="reason" required placeholder="Reason" style="padding:6px;border:1px solid #ddd5c8;border-radius:6px"><button type="submit" style="padding:6px 10px;background:#c62828;color:#fff;border:0;border-radius:6px">Reject</button></form></td></tr>@endforeach</table></div></div>
+</div>
+<div data-panel="users" hidden><div style="{{ $card }}"><div style="{{ $cardHead }}"><h3 style="{{ $cardTitle }}">Users</h3></div><table style="width:100%;border-collapse:collapse"><tr><th style="{{ $th }};padding:12px">Name</th><th style="{{ $th }}">Role</th><th style="{{ $th }}">Status</th><th style="{{ $th }}">Action</th></tr>@foreach($users as $managedUser)<tr style="border-top:1px solid #f0ebe2"><td style="padding:12px">{{ $managedUser['name'] }}<br><small>{{ $managedUser['email'] }}</small></td><td>{{ $managedUser['role'] }}</td><td>{{ $managedUser['status'] }}</td><td><form method="POST" action="{{ route('admin.users.status',$managedUser['id']) }}">@csrf @method('PATCH')<input type="hidden" name="is_active" value="{{ $managedUser['status'] !== 'Active' ? 1 : 0 }}"><button type="submit" style="padding:6px 10px;border:1px solid #c9a84c;background:transparent;border-radius:6px">{{ $managedUser['status'] === 'Active' ? 'Deactivate' : 'Activate' }}</button></form></td></tr>@endforeach</table></div></div>
+<div data-panel="services-admin" hidden><div style="{{ $card }}"><div style="{{ $cardHead }}"><h3 style="{{ $cardTitle }}">Services</h3></div><table style="width:100%;border-collapse:collapse"><tr><th style="{{ $th }};padding:12px">Service</th><th style="{{ $th }}">Vendor</th><th style="{{ $th }}">Status</th><th style="{{ $th }}">Action</th></tr>@foreach($services as $managedService)<tr style="border-top:1px solid #f0ebe2"><td style="padding:12px">{{ $managedService['name'] }}</td><td>{{ $managedService['vendor'] }}</td><td>{{ $managedService['status'] }}</td><td><form method="POST" action="{{ route('admin.services.status',$managedService['id']) }}">@csrf @method('PATCH')<input type="hidden" name="is_active" value="{{ $managedService['status'] !== 'Active' ? 1 : 0 }}"><button type="submit" style="padding:6px 10px;border:1px solid #c9a84c;background:transparent;border-radius:6px">{{ $managedService['status'] === 'Active' ? 'Deactivate' : 'Activate' }}</button></form></td></tr>@endforeach</table></div></div>
+<div data-panel="reports" hidden><div style="{{ $card }}padding:24px"><h3 style="{{ $cardTitle }}">Reports</h3><p style="color:#6b5a47">Export bookings, revenue, and top vendors for a selected period.</p><form method="GET" action="{{ route('admin.reports.pdf') }}" style="display:flex;gap:12px;align-items:end"><label style="{{ $label }}">From<input type="date" name="date_from" required style="display:block;padding:9px;border:1px solid #ddd5c8;border-radius:6px"></label><label style="{{ $label }}">To<input type="date" name="date_to" required style="display:block;padding:9px;border:1px solid #ddd5c8;border-radius:6px"></label><button type="submit" style="padding:10px 16px;background:#1a110a;color:#fff;border:0;border-radius:7px">Download PDF report</button></form></div></div>
 
 @section('modals')
 {{-- Invoice / booking slip --}}

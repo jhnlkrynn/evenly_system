@@ -39,6 +39,11 @@ class ServicePolicy
         return $user->hasRole('vendor') && $service->vendor_id === $user->vendor?->id;
     }
 
+    public function adminUpdate(User $user, Service $service): bool
+    {
+        return $user->hasRole('admin', 'superadmin');
+    }
+
     /**
      * Determine whether the user can delete the model.
      */

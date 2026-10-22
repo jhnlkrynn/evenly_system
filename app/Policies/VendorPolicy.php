@@ -39,6 +39,11 @@ class VendorPolicy
         return $user->hasRole('vendor') && $vendor->user_id === $user->id;
     }
 
+    public function verify(User $user, Vendor $vendor): bool
+    {
+        return $user->hasRole('admin', 'superadmin');
+    }
+
     /**
      * Determine whether the user can delete the model.
      */

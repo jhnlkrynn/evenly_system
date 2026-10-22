@@ -40,6 +40,10 @@ export function isShielded(event, owner) {
 }
 
 export function initCore() {
+    document.addEventListener('submit', (event) => {
+        const form = event.target.closest('form[data-confirm]');
+        if (form && !window.confirm(form.dataset.confirm)) event.preventDefault();
+    });
     document.addEventListener('click', (event) => {
         const { target } = event;
 
