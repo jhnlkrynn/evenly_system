@@ -116,7 +116,7 @@
 {{-- ── MY BOOKINGS ── --}}
 <div data-panel="bookings" hidden>
     <div class="dash-pills--customer" data-filter-group="customer-bookings" style="display: flex; gap: 10px; margin-bottom: 20px;">
-        @foreach (['All', 'Confirmed', 'Pending', 'Completed'] as $filter)
+        @foreach (['All', 'Confirmed', 'Pending', 'Completed', 'Cancelled'] as $filter)
             <button type="button" class="dash-pill {{ $filter === 'All' ? 'active' : '' }}" data-filter-value="{{ $filter }}">{{ $filter }}</button>
         @endforeach
     </div>
@@ -211,8 +211,8 @@
 {{-- ── RATINGS & REVIEWS ── --}}
 <div data-panel="reviews" hidden style="max-width: 720px;">
     <div style="background: #fff8e1; border: 1px solid #f9a825; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: #e65100;">
-        ⭐ You have <strong>2 completed bookings</strong> pending
-        review. Help future customers by sharing your experience!
+        ⭐ You have <strong>{{ $pendingReviews }} completed bookings</strong> pending review.
+        Help future customers by sharing your experience!
     </div>
     @foreach ($completed as $b)
         <div data-review-card style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 22px 24px; margin-bottom: 16px;">
@@ -223,9 +223,13 @@
                 </div>
                 <span data-review-done hidden style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: #e8f5e9; color: #2e7d32;">✓ Reviewed</span>
             </div>
-            <div data-review-form>
+            @php($booking = $b['booking'])
+            @if (! $booking->review)
+                <form method="POST" action="{{ route('customer.bookings.reviews.store', $booking) }}" data-review-form>
+                    @csrf
                 <div style="margin-bottom: 12px;">
                     <div style="font-size: 13px; font-weight: 600; color: #6b5a47; margin-bottom: 8px;">Your Rating</div>
+                    <input type="hidden" name="rating" data-review-rating>
                     <div style="display: flex; gap: 4px;">
                         @for ($star = 1; $star <= 5; $star++)
                             <button type="button" class="review-star" data-star="{{ $star }}" aria-label="{{ $star }} star{{ $star > 1 ? 's' : '' }}">★</button>
@@ -234,10 +238,16 @@
                 </div>
                 <div style="margin-bottom: 14px;">
                     <div style="font-size: 13px; font-weight: 600; color: #6b5a47; margin-bottom: 8px;">Your Review</div>
-                    <textarea data-review-text placeholder="Share your experience with this vendor..." style="width: 100%; padding: 10px 12px; border: 1px solid #ddd5c8; border-radius: 8px; font-size: 13px; color: #1a110a; outline: none; background: #faf8f4; min-height: 80px; resize: vertical; box-sizing: border-box;"></textarea>
+                    <textarea name="comment" data-review-text placeholder="Share your experience with this vendor..." style="width: 100%; padding: 10px 12px; border: 1px solid #ddd5c8; border-radius: 8px; font-size: 13px; color: #1a110a; outline: none; background: #faf8f4; min-height: 80px; resize: vertical; box-sizing: border-box;"></textarea>
                 </div>
-                <button type="button" data-review-submit style="padding: 9px 24px; border-radius: 8px; border: none; background: #ccc; color: #f5f0e8; font-size: 13px; font-weight: 600; cursor: default;">Submit Review</button>
-            </div>
+                    <button type="submit" data-review-submit style="padding: 9px 24px; border-radius: 8px; border: none; background: #1a110a; color: #f5f0e8; font-size: 13px; font-weight: 600; cursor: pointer;">Submit Review</button>
+                </form>
+            @else
+                <div style="padding: 14px 16px; background: #faf8f4; border-radius: 8px;">
+                    <div style="color: #c9a84c; font-size: 20px; margin-bottom: 6px; letter-spacing: 2px;">{{ str_repeat('★', $booking->review->rating) }}</div>
+                    <p style="font-size: 13px; color: #3d2510; margin: 0; font-style: italic;">{{ $booking->review->comment ?: 'No written review.' }}</p>
+                </div>
+            @endif
             <div data-review-result hidden style="padding: 14px 16px; background: #faf8f4; border-radius: 8px;">
                 <div data-review-stars style="color: #c9a84c; font-size: 20px; margin-bottom: 6px; letter-spacing: 2px;"></div>
                 <p data-review-quote style="font-size: 13px; color: #3d2510; margin: 0; font-style: italic;"></p>
@@ -340,16 +350,46 @@
             <span style="font-size: 13px; color: #6b5a47; font-weight: 500;">{{ $b['id'] }}</span>
             <span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: {{ $modalBadge[0] }}; color: {{ $modalBadge[1] }};">{{ $b['status'] }}</span>
         </div>
-        @foreach ([['Service', $b['service']], ['Category', $b['category']], ['Date', $b['date']], ['Time', $b['time']], ['Guests', $b['guests'].' pax'], ['Amount', $b['amount']]] as [$label, $value])
+        @foreach ([['Service', $b['service']], ['Vendor', $b['vendor']], ['Category', $b['category']], ['Date', $b['date']], ['Time', $b['time']], ['Guests', $b['guests'].' pax'], ['Amount', $b['amount']], ['Paid', '₱'.number_format((float) $b['booking']->amount_paid, 2)], ['Balance', '₱'.number_format($b['booking']->balance(), 2)]] as [$label, $value])
             <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0ebe2;">
                 <span style="font-size: 13px; color: #6b5a47;">{{ $label }}</span>
                 <span style="font-size: 13px; color: #1a110a; font-weight: 600;">{{ $value }}</span>
             </div>
         @endforeach
-        <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <div style="margin-top: 20px; font-size: 12px; color: #6b5a47;">
+            <strong>Assigned staff</strong>
+            <div style="margin: 6px 0 12px;">{{ $b['booking']->staff->pluck('full_name')->join(', ') ?: 'Not yet assigned' }}</div>
+            <strong>Payment history</strong>
+            @forelse ($b['booking']->payments->sortByDesc('created_at') as $payment)
+                <div style="display: flex; justify-content: space-between; padding: 5px 0;"><span>{{ $payment->type }} · {{ $payment->method }}</span><span>₱{{ number_format((float) $payment->amount, 2) }}</span></div>
+            @empty
+                <div style="margin-top: 6px;">No payments recorded yet.</div>
+            @endforelse
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
             <button type="button" data-modal-close style="flex: 1; padding: 11px; border-radius: 8px; border: 1px solid #e8dfd0; background: #faf8f4; color: #3d2510; font-size: 13px; font-weight: 500; cursor: pointer;">Close</button>
+            @if ($b['booking']->paymentOptions() !== [])
+                <a href="{{ route('customer.payments.create', $b['booking']) }}" style="flex: 1; padding: 11px; border-radius: 8px; background: #c9a84c; color: #1a110a; font-size: 13px; font-weight: 700; text-align: center;">Pay balance</a>
+            @endif
+            <a href="{{ route('bookings.slip', $b['booking']) }}" style="flex: 1; padding: 11px; border-radius: 8px; background: #1a110a; color: #f5f0e8; font-size: 13px; text-align: center;">Slip PDF</a>
+            <a href="{{ route('bookings.invoice', $b['booking']) }}" style="flex: 1; padding: 11px; border-radius: 8px; background: #1a110a; color: #f5f0e8; font-size: 13px; text-align: center;">Invoice PDF</a>
             <button type="button" data-href="{{ route('services.index') }}" style="flex: 2; padding: 11px; border-radius: 8px; border: none; background: #1a110a; color: #f5f0e8; font-size: 13px; font-weight: 600; cursor: pointer;">Book Again</button>
+            @if ($b['status'] === 'Pending')
+                <button type="button" data-modal-open="cancel-booking-{{ $b['id'] }}" style="flex: 1 0 100%; padding: 9px; border-radius: 8px; border: 1px solid #c62828; background: transparent; color: #c62828; font-size: 12px; cursor: pointer;">Cancel pending booking</button>
+            @endif
         </div>
     </x-dashboard.modal>
+    @if ($b['status'] === 'Pending')
+        <x-dashboard.modal id="cancel-booking-{{ $b['id'] }}" panel-style="background: #fff; border-radius: 16px; padding: 28px; width: 400px; box-shadow: 0 24px 64px rgba(0,0,0,0.3);">
+            <h3 style="font-family: 'Playfair Display', serif; color: #1a110a;">Cancel booking?</h3>
+            <p style="color: #6b5a47; font-size: 13px;">This will release the vendor's date for {{ $b['id'] }}. This action cannot be undone.</p>
+            <form method="POST" action="{{ route('customer.bookings.cancel', $b['booking']) }}" style="display: flex; gap: 10px;">
+                @csrf
+                <input type="hidden" name="confirmation" value="1">
+                <button type="button" data-modal-close style="flex: 1; padding: 10px; border: 1px solid #e8dfd0; background: #faf8f4; border-radius: 8px;">Keep booking</button>
+                <button type="submit" style="flex: 1; padding: 10px; border: none; background: #c62828; color: #fff; border-radius: 8px;">Yes, cancel</button>
+            </form>
+        </x-dashboard.modal>
+    @endif
 @endforeach
 @endsection

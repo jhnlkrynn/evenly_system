@@ -7,8 +7,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\VendorBookingController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\VendorServiceController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -40,12 +44,23 @@ Route::prefix('customer')->name('customer.')->middleware(['auth', 'role:customer
 
     Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::post('/bookings/{booking:booking_code}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+    Route::post('/bookings/{booking:booking_code}/reviews', [ReviewController::class, 'store'])->name('bookings.reviews.store');
     Route::get('/bookings/{booking:booking_code}/pay', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/bookings/{booking:booking_code}/payments', [PaymentController::class, 'store'])->name('payments.store');
 });
 
 Route::prefix('vendor')->name('vendor.')->middleware(['auth', 'role:vendor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'vendor'])->name('dashboard');
+    Route::patch('/bookings/{booking:booking_code}/status', [VendorBookingController::class, 'updateStatus'])->name('bookings.status');
+    Route::post('/bookings/{booking:booking_code}/staff', [StaffController::class, 'assign'])->name('bookings.staff');
+    Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+    Route::patch('/staff/{staff}', [StaffController::class, 'update'])->name('staff.update');
+    Route::patch('/staff/{staff}/deactivate', [StaffController::class, 'deactivate'])->name('staff.deactivate');
+    Route::post('/services', [VendorServiceController::class, 'store'])->name('services.store');
+    Route::patch('/services/{service}', [VendorServiceController::class, 'update'])->name('services.update');
+    Route::patch('/services/{service}/toggle', [VendorServiceController::class, 'toggle'])->name('services.toggle');
+    Route::patch('/profile/{vendor}', [ProfileController::class, 'updateVendor'])->name('profile.update');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Booking\CancelBookingRequest;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Models\ActivityLog;
 use App\Models\Barangay;
@@ -135,6 +136,14 @@ class BookingController extends Controller
             'justBooked' => (bool) $request->session()->get('booked'),
             'canPay' => $request->user()->can('pay', $booking),
         ]);
+    }
+
+    public function cancel(CancelBookingRequest $request, Booking $booking): RedirectResponse
+    {
+        $booking->update(['status' => 'Cancelled']);
+        ActivityLog::record($request->user()->id, 'booking_cancelled', 'Cancelled '.$booking->booking_code.'.');
+
+        return back()->with('status', 'Booking '.$booking->booking_code.' was cancelled.');
     }
 
     private function specialRequests(array $data, bool $decoration): ?string

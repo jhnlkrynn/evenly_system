@@ -47,7 +47,7 @@
         <p style="font-size: 12px; color: #9c8f7a; margin: 0;">Vendor Portal · {{ $business->business_name }}</p>
     </div>
     <div style="display: flex; align-items: center; gap: 14px;">
-        <button type="button" class="vendor-add-service" data-tab-link="services" style="padding: 8px 20px; border-radius: 8px; background: #c9a84c; border: none; color: #1a110a; font-size: 13px; font-weight: 600; cursor: pointer;">+ Add Service</button>
+        <button type="button" class="vendor-add-service" data-modal-open="vendor-add-service" style="padding: 8px 20px; border-radius: 8px; background: #c9a84c; border: none; color: #1a110a; font-size: 13px; font-weight: 600; cursor: pointer;">+ Add Service</button>
         <button type="button" aria-label="Notifications" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b5a47;">🔔</button>
         <div style="width: 36px; height: 36px; border-radius: 50%; background: #3d2510; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 13px; font-weight: 700; cursor: pointer;">{{ $user->initials() }}</div>
     </div>
@@ -55,6 +55,12 @@
 @endsection
 
 @section('panels')
+@if (! $business->is_verified)
+    <div style="background: #fff8e1; border: 1px solid #f9a825; border-radius: 10px; padding: 13px 18px; margin-bottom: 20px; color: #8a6418;">
+        <strong>Pending verification.</strong> Your business profile is saved, but customers will not see your services until Eventlynk verifies your vendor account.
+    </div>
+@endif
+<script type="application/json" data-vendor-data>@json(['charts' => $chartData, 'calendar' => $calendarBookings])</script>
 {{-- ── BROWSE SERVICES (embedded marketplace; main padding drops to 0 on this tab) ── --}}
 <div data-panel="browse" data-main-padding="0" hidden>
     @include('services.partials.browser', ['embedded' => true])
@@ -90,23 +96,17 @@
 
         <div style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 20px;">
             <h3 style="font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #1a110a; margin-bottom: 20px;">Monthly Earnings</h3>
-            <div style="display: flex; align-items: flex-end; gap: 10px; height: 160px;">
-                @foreach ($monthly as $e)
-                    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
-                        <div style="font-size: 10px; color: #9c8f7a; font-weight: 500;">₱{{ round($e['amount'] / 1000) }}K</div>
-                        <div class="{{ $e['month'] === 'Apr' ? '' : 'dash-bar-hover' }}" style="height: {{ round($e['amount'] / $maxEarning * 130, 3) }}px; width: 100%; border-radius: 4px 4px 0 0; background: {{ $e['month'] === 'Apr' ? '#c9a84c' : '#e8dfd0' }}; transition: background 0.2s; cursor: pointer;"></div>
-                        <div style="font-size: 11px; color: #6b5a47; font-weight: 500;">{{ $e['month'] }}</div>
-                    </div>
-                @endforeach
-            </div>
+            <canvas data-chart="monthly-earnings" height="160"></canvas>
         </div>
+        <div style="{{ $card }}; padding: 20px;"><h3 style="{{ $cardTitle }}">Bookings by Status</h3><canvas data-chart="booking-status" height="180"></canvas></div>
+        <div style="{{ $card }}; padding: 20px;"><h3 style="{{ $cardTitle }}">Bookings by Category</h3><canvas data-chart="booking-category" height="180"></canvas></div>
     </div>
 </div>
 
 {{-- ── MY SERVICES ── --}}
 <div data-panel="services" hidden>
     <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-        <button type="button" style="padding: 10px 24px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">+ Add New Service</button>
+        <button type="button" data-modal-open="vendor-add-service" style="padding: 10px 24px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">+ Add New Service</button>
     </div>
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;">
         @foreach ($services as $s)
@@ -133,7 +133,7 @@
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" data-modal-open="edit-service-{{ $s['id'] }}" style="flex: 1; padding: 9px; border-radius: 8px; border: 1px solid #c9a84c; background: transparent; color: #c9a84c; font-size: 13px; font-weight: 500; cursor: pointer;">Edit</button>
-                    <button type="button" data-toggle-service style="flex: 1; padding: 9px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 13px; font-weight: 500; cursor: pointer;">{{ $s['status'] === 'Active' ? 'Pause' : 'Activate' }}</button>
+                    <form method="POST" action="{{ route('vendor.services.toggle', $s['service']) }}" style="flex: 1;">@csrf @method('PATCH')<button type="submit" style="width: 100%; padding: 9px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 13px; font-weight: 500; cursor: pointer;">{{ $s['status'] === 'Active' ? 'Pause' : 'Activate' }}</button></form>
                 </div>
             </div>
         @endforeach
@@ -179,7 +179,7 @@
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div style="{{ $card }}">
             <div style="padding: 18px 20px; border-bottom: 1px solid #e8dfd0;">
-                <h3 style="{{ $cardTitle }}">Staff Roster</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center;"><h3 style="{{ $cardTitle }}">Staff Roster</h3><button type="button" data-modal-open="vendor-add-staff" style="background: #1a110a; color: #c9a84c; border: 0; padding: 7px 12px; border-radius: 7px;">+ Add staff</button></div>
             </div>
             @foreach ($staff as $member)
                 <div style="display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid #f0ebe2;">
@@ -188,7 +188,8 @@
                         <div style="font-size: 13px; font-weight: 600; color: #1a110a;">{{ $member['name'] }}</div>
                         <div style="font-size: 11px; color: #9c8f7a;">{{ $member['role'] }}</div>
                     </div>
-                    <span style="padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: {{ $member['available'] ? '#e8f5e9' : '#fce4ec' }}; color: {{ $member['available'] ? '#2e7d32' : '#c62828' }};">{{ $member['available'] ? 'Available' : 'Assigned' }}</span>
+                    <span style="padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; background: {{ $member['available'] ? '#e8f5e9' : '#fce4ec' }}; color: {{ $member['available'] ? '#2e7d32' : '#c62828' }};">{{ $member['available'] ? 'Active' : 'Inactive' }}</span>
+                    <button type="button" data-modal-open="edit-staff-{{ $member['id'] }}" style="border: 0; background: transparent; color: #c9a84c;">Edit</button>
                 </div>
             @endforeach
         </div>
@@ -199,13 +200,12 @@
                     <div style="font-weight: 700; font-size: 14px; color: #1a110a; margin-bottom: 2px;">{{ $b['id'] }} — {{ $b['customer'] }}</div>
                     <div style="font-size: 12px; color: #9c8f7a; margin-bottom: 12px;">{{ $b['service'] }} · {{ $b['date'] }}</div>
                     <div style="font-size: 12px; font-weight: 600; color: #6b5a47; margin-bottom: 8px;">Assign Staff:</div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <form method="POST" action="{{ route('vendor.bookings.staff', $b['booking']) }}"><div style="display: flex; flex-wrap: wrap; gap: 6px;">
                         @foreach ($staff as $member)
                             @php($isAssigned = in_array($member['id'], $assigned, true))
-                            <button type="button" data-assign-staff="{{ $member['id'] }}" data-staff-name="{{ $member['name'] }}" aria-pressed="{{ $isAssigned ? 'true' : 'false' }}"
-                                style="padding: 5px 12px; border-radius: 20px; border: 1.5px solid {{ $isAssigned ? '#c9a84c' : '#e8dfd0' }}; background: {{ $isAssigned ? '#1a110a' : '#faf8f4' }}; color: {{ $isAssigned ? '#c9a84c' : '#6b5a47' }}; font-size: 12px; font-weight: {{ $isAssigned ? 600 : 400 }}; cursor: pointer; transition: all 0.15s;">{{ $isAssigned ? '✓ ' : '' }}{{ $member['name'] }}</button>
+                            <label style="padding: 5px 12px; border-radius: 20px; border: 1.5px solid #e8dfd0; background: #faf8f4; color: #6b5a47; font-size: 12px;"><input type="checkbox" name="staff_ids[]" value="{{ $member['id'] }}" @checked($isAssigned) @disabled(! $member['available'])> {{ $member['name'] }}</label>
                         @endforeach
-                    </div>
+                    </div>@csrf<button type="submit" style="margin-top: 12px; padding: 8px 14px; border: 0; border-radius: 7px; background: #1a110a; color: #c9a84c;">Save assignment</button></form>
                     <div data-staff-count @if (count($assigned) === 0) hidden @endif style="margin-top: 10px; font-size: 12px; color: #2e7d32;">{{ count($assigned) }} staff assigned</div>
                 </div>
             @endforeach
@@ -327,10 +327,10 @@
 </div>
 
 {{-- ── AVAILABILITY ── --}}
-<div data-panel="availability" hidden style="max-width: 700px;">
+<div data-panel="availability" hidden style="max-width: 700px;" data-vendor-calendar>
     <div style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a110a;">May 2024 Availability</h3>
+            <div style="display: flex; align-items: center; gap: 12px;"><button type="button" data-calendar-prev class="btn btn-sm btn-outline-secondary">‹</button><h3 data-calendar-label style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a110a; margin: 0;"></h3><button type="button" data-calendar-next class="btn btn-sm btn-outline-secondary">›</button></div>
             <div style="display: flex; gap: 16px; font-size: 12px;">
                 @foreach ([['#e6f4ea', '#2e7d32', 'Available'], ['#c9a84c22', '#a07a2a', 'Booked'], ['#fce4ec', '#c62828', 'Blocked']] as [$bg, $color, $legend])
                     <div style="display: flex; align-items: center; gap: 6px;">
@@ -345,17 +345,8 @@
                 <div style="text-align: center; font-size: 12px; font-weight: 600; color: #9c8f7a; padding: 6px 0px;">{{ $weekday }}</div>
             @endforeach
         </div>
-        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
-            <div></div><div></div><div></div>
-            @for ($day = 1; $day <= 31; $day++)
-                @php($isBooked = in_array($day, $bookedDays, true))
-                @php($isBlocked = in_array($day, $blockedDays, true))
-                <button type="button" data-availability-day="{{ $day }}" data-state="{{ $isBooked ? 'booked' : ($isBlocked ? 'blocked' : 'available') }}" @disabled($isBooked)
-                    title="{{ $isBooked ? 'Booked' : ($isBlocked ? 'Click to unblock' : 'Click to block') }}"
-                    style="padding: 10px 4px; border-radius: 8px; border: none; cursor: {{ $isBooked ? 'default' : 'pointer' }}; text-align: center; font-size: 13px; font-weight: {{ $isBooked ? 700 : 500 }}; background: {{ $isBooked ? '#c9a84c22' : ($isBlocked ? '#fce4ec' : '#e6f4ea') }}; color: {{ $isBooked ? '#a07a2a' : ($isBlocked ? '#c62828' : '#2e7d32') }}; transition: background 0.15s;">{{ $day }}</button>
-            @endfor
-        </div>
-        <p style="font-size: 12px; color: #9c8f7a; margin: 14px 0px 0px;">Click any available date to block/unblock it for bookings.</p>
+        <div data-calendar-grid style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;"></div>
+        <p style="font-size: 12px; color: #9c8f7a; margin: 14px 0px 0px;">Real bookings are read-only. Use the arrows to view any month.</p>
     </div>
 </div>
 
@@ -392,13 +383,17 @@
                 <div style="font-size: 13px; color: #9c8f7a;">Vendor · 8+ years on Eventlynk · ⭐ 4.9</div>
             </div>
         </div>
-        @foreach ([['Business Name', $business->business_name], ['Email', $user->email], ['Phone', $business->contact_number ?? $user->phone], ['Location', 'Quezon City, Metro Manila'], ['Service Category', 'Catering']] as [$fieldLabel, $fieldValue])
+        <form method="POST" action="{{ route('vendor.profile.update', $business) }}" enctype="multipart/form-data">@csrf @method('PATCH')
+        @foreach ([['Business Name', 'business_name', $business->business_name], ['Short name', 'short_name', $business->short_name], ['Phone', 'contact_number', $business->contact_number ?? $user->phone], ['Location', 'barangay', $business->barangay]] as [$fieldLabel, $fieldName, $fieldValue])
             <div style="margin-bottom: 18px;">
                 <label style="display: block; font-size: 13px; font-weight: 500; color: #6b5a47; margin-bottom: 7px;">{{ $fieldLabel }}</label>
-                <input value="{{ $fieldValue }}" style="width: 100%; border: 1px solid #ddd5c8; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #1a110a; outline: none; box-sizing: border-box; background: #faf8f4;">
+                <input name="{{ $fieldName }}" value="{{ $fieldValue }}" style="width: 100%; border: 1px solid #ddd5c8; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #1a110a; outline: none; box-sizing: border-box; background: #faf8f4;">
             </div>
         @endforeach
-        <button type="button" style="padding: 12px 32px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">Save Changes</button>
+        <div style="margin-bottom: 18px;"><label style="display:block;font-size:13px;font-weight:500;color:#6b5a47;margin-bottom:7px;">Description</label><textarea name="description" style="width:100%;min-height:90px;border:1px solid #ddd5c8;border-radius:8px;padding:12px;background:#faf8f4;">{{ $business->description }}</textarea></div>
+        <div style="margin-bottom: 18px;"><label style="display:block;font-size:13px;font-weight:500;color:#6b5a47;margin-bottom:7px;">Logo</label><input type="file" name="logo" accept="image/*"></div>
+        <button type="submit" style="padding: 12px 32px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">Save Changes</button>
+        </form>
     </div>
 </div>
 
@@ -461,20 +456,53 @@
             <h3 style="{{ $modalTitle }}">Edit Service</h3>
             <button type="button" data-modal-close aria-label="Close" style="{{ $closeX }}">✕</button>
         </div>
-        <div style="margin-bottom: 14px;">
-            <label style="{{ $label }}">Service Name</label>
-            <input value="{{ $s['name'] }}" data-edit-name style="{{ $input }}">
-        </div>
-        <div style="margin-bottom: 20px;">
-            <label style="{{ $label }}">Price</label>
-            <input value="{{ $s['price'] }}" data-edit-price style="{{ $input }}">
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button type="button" data-modal-close style="{{ $cancelBtn }}">Cancel</button>
-            <button type="button" data-save-service style="{{ $saveBtn }}">Save Changes</button>
-        </div>
+        <form method="POST" action="{{ route('vendor.services.update', $s['service']) }}" enctype="multipart/form-data">
+            @csrf @method('PATCH')
+            <div style="margin-bottom: 14px;"><label style="{{ $label }}">Service Name</label><input name="name" value="{{ $s['service']->name }}" style="{{ $input }}"></div>
+            <div style="margin-bottom: 14px;"><label style="{{ $label }}">Category</label><select name="service_category_id" style="{{ $input }}">@foreach ($categories as $category)<option value="{{ $category->id }}" @selected($category->id === $s['service']->service_category_id)>{{ $category->name }}</option>@endforeach</select></div>
+            <div style="margin-bottom: 14px;"><label style="{{ $label }}">Price</label><input name="price" type="number" min="0" step="0.01" value="{{ $s['service']->price }}" style="{{ $input }}"></div>
+            <div style="margin-bottom: 14px;"><label style="{{ $label }}">Price unit</label><select name="price_unit" style="{{ $input }}"><option value="event" @selected($s['service']->price_unit === 'event')>Per event</option><option value="staff" @selected($s['service']->price_unit === 'staff')>Per staff</option></select></div>
+            <div style="margin-bottom: 14px;"><label style="{{ $label }}">Description</label><textarea name="description" style="{{ $input }}">{{ $s['service']->description }}</textarea></div>
+            <div style="margin-bottom: 20px;"><label style="{{ $label }}">Replace image</label><input name="image" type="file" accept="image/*" style="{{ $input }}"></div>
+            <div style="display: flex; gap: 10px;"><button type="button" data-modal-close style="{{ $cancelBtn }}">Cancel</button><button type="submit" style="{{ $saveBtn }}">Save Changes</button></div>
+        </form>
     </x-dashboard.modal>
 @endforeach
+
+<x-dashboard.modal id="vendor-add-staff" panel-style="background:#fff;border-radius:16px;padding:30px;width:400px;">
+    <h3 style="{{ $modalTitle }}">Add staff member</h3>
+    <form method="POST" action="{{ route('vendor.staff.store') }}">@csrf
+        <div style="margin:14px 0;"><label style="{{ $label }}">Full name</label><input name="full_name" required style="{{ $input }}"></div>
+        <div style="margin-bottom:20px;"><label style="{{ $label }}">Role</label><select name="role" style="{{ $input }}">@foreach (\App\Models\Staff::ROLES as $role)<option>{{ $role }}</option>@endforeach</select></div>
+        <button type="submit" style="{{ $saveBtn }}">Add staff</button>
+    </form>
+</x-dashboard.modal>
+@foreach ($staff as $member)
+<x-dashboard.modal id="edit-staff-{{ $member['id'] }}" panel-style="background:#fff;border-radius:16px;padding:30px;width:400px;">
+    <h3 style="{{ $modalTitle }}">Edit staff member</h3>
+    <form method="POST" action="{{ route('vendor.staff.update', $member['staff']) }}">@csrf @method('PATCH')
+        <div style="margin:14px 0;"><label style="{{ $label }}">Full name</label><input name="full_name" value="{{ $member['name'] }}" required style="{{ $input }}"></div>
+        <div style="margin-bottom:20px;"><label style="{{ $label }}">Role</label><select name="role" style="{{ $input }}">@foreach (\App\Models\Staff::ROLES as $role)<option @selected($role === $member['role'])>{{ $role }}</option>@endforeach</select></div>
+        <button type="submit" style="{{ $saveBtn }}">Save changes</button>
+    </form>
+    @if ($member['available'])
+        <form method="POST" action="{{ route('vendor.staff.deactivate', $member['staff']) }}" style="margin-top:10px;">@csrf @method('PATCH')<button type="submit" style="width:100%; padding:10px; border:1px solid #c62828; color:#c62828; background:#fff; border-radius:8px;">Deactivate</button></form>
+    @endif
+</x-dashboard.modal>
+@endforeach
+
+<x-dashboard.modal id="vendor-add-service" panel-style="background: #fff; border-radius: 16px; padding: 32px; width: 440px; box-shadow: 0 24px 64px rgba(0,0,0,0.3);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;"><h3 style="{{ $modalTitle }}">Add Service</h3><button type="button" data-modal-close aria-label="Close" style="{{ $closeX }}">✕</button></div>
+    <form method="POST" action="{{ route('vendor.services.store') }}" enctype="multipart/form-data">
+        @csrf
+        <div style="margin-bottom: 14px;"><label style="{{ $label }}">Service Name</label><input name="name" required style="{{ $input }}"></div>
+        <div style="margin-bottom: 14px;"><label style="{{ $label }}">Category</label><select name="service_category_id" required style="{{ $input }}">@foreach ($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select></div>
+        <div style="display: flex; gap: 10px;"><div style="flex: 1;"><label style="{{ $label }}">Price</label><input name="price" type="number" min="0" step="0.01" required style="{{ $input }}"></div><div style="flex: 1;"><label style="{{ $label }}">Unit</label><select name="price_unit" style="{{ $input }}"><option value="event">Per event</option><option value="staff">Per staff</option></select></div></div>
+        <div style="margin: 14px 0;"><label style="{{ $label }}">Description</label><textarea name="description" style="{{ $input }}"></textarea></div>
+        <div style="margin-bottom: 20px;"><label style="{{ $label }}">Image</label><input name="image" type="file" accept="image/*" style="{{ $input }}"></div>
+        <button type="submit" style="{{ $saveBtn }}">Add Service</button>
+    </form>
+</x-dashboard.modal>
 
 <x-dashboard.modal id="vendor-add-inventory" panel-style="background: #fff; border-radius: 16px; padding: 32px; width: 400px; box-shadow: 0 24px 64px rgba(0,0,0,0.3);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
@@ -509,10 +537,18 @@
                 <span style="font-size: 13px; color: #1a110a; font-weight: 600;">{{ $rowValue }}</span>
             </div>
         @endforeach
+        <div style="margin-top: 14px; display: flex; gap: 8px;">
+            <a href="{{ route('bookings.slip', $b['booking']) }}" style="flex: 1; padding: 8px; border-radius: 7px; background: #faf8f4; border: 1px solid #e8dfd0; color: #3d2510; text-align: center; font-size: 12px;">Slip PDF</a>
+            <a href="{{ route('bookings.invoice', $b['booking']) }}" style="flex: 1; padding: 8px; border-radius: 7px; background: #faf8f4; border: 1px solid #e8dfd0; color: #3d2510; text-align: center; font-size: 12px;">Invoice PDF</a>
+        </div>
         <div style="margin-top: 20px; display: flex; gap: 10px;">
             <button type="button" data-modal-close style="{{ $cancelBtn }}">Close</button>
             @if ($b['status'] === 'Pending')
-                <button type="button" data-modal-close data-toast-message="{{ $b['id'] }} confirmed" style="flex: 2; padding: 11px; border-radius: 8px; border: none; background: #c9a84c; color: #1a110a; font-size: 13px; font-weight: 700; cursor: pointer;">✓ Confirm Booking</button>
+                <form method="POST" action="{{ route('vendor.bookings.status', $b['booking']) }}">@csrf @method('PATCH')<input type="hidden" name="status" value="Confirmed"><button type="submit" style="flex: 2; padding: 11px; border-radius: 8px; border: none; background: #c9a84c; color: #1a110a; font-size: 13px; font-weight: 700; cursor: pointer;">✓ Confirm Booking</button></form>
+                <form method="POST" action="{{ route('vendor.bookings.status', $b['booking']) }}">@csrf @method('PATCH')<input type="hidden" name="status" value="Cancelled"><button type="submit" style="flex: 1; padding: 11px; border-radius: 8px; border: 1px solid #c62828; background: transparent; color: #c62828;">Cancel</button></form>
+            @elseif ($b['status'] === 'Confirmed')
+                <form method="POST" action="{{ route('vendor.bookings.status', $b['booking']) }}">@csrf @method('PATCH')<input type="hidden" name="status" value="Completed"><button type="submit" style="flex: 2; padding: 11px; border-radius: 8px; border: none; background: #2e7d32; color: #fff; font-weight: 700;">✓ Mark Completed</button></form>
+                <form method="POST" action="{{ route('vendor.bookings.status', $b['booking']) }}">@csrf @method('PATCH')<input type="hidden" name="status" value="Cancelled"><button type="submit" style="flex: 1; padding: 11px; border-radius: 8px; border: 1px solid #c62828; background: transparent; color: #c62828;">Cancel</button></form>
             @endif
         </div>
     </x-dashboard.modal>

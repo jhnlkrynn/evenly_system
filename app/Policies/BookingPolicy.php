@@ -32,4 +32,33 @@ class BookingPolicy
             && $booking->customer_id === $user->id
             && $booking->paymentOptions() !== [];
     }
+
+    public function cancel(User $user, Booking $booking): bool
+    {
+        return $user->hasRole('customer')
+            && $booking->customer_id === $user->id
+            && $booking->status === 'Pending';
+    }
+
+    public function changeStatus(User $user, Booking $booking): bool
+    {
+        return $user->hasRole('vendor')
+            && $booking->vendor_id === $user->vendor?->id
+            && in_array($booking->status, ['Pending', 'Confirmed'], true);
+    }
+
+    public function assignStaff(User $user, Booking $booking): bool
+    {
+        return $user->hasRole('vendor')
+            && $booking->vendor_id === $user->vendor?->id
+            && in_array($booking->status, ['Confirmed', 'Completed'], true);
+    }
+
+    public function review(User $user, Booking $booking): bool
+    {
+        return $user->hasRole('customer')
+            && $booking->customer_id === $user->id
+            && $booking->status === 'Completed'
+            && ! $booking->review()->exists();
+    }
 }

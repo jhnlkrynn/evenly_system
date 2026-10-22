@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\DashboardData;
+use App\Support\DatabaseDashboardData;
 use App\Support\ServiceSearch;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class DashboardController extends Controller
 {
     public function customer(): View
     {
-        return view('dashboards.customer', DashboardData::customer());
+        return view('dashboards.customer', DatabaseDashboardData::customer(request()->user()));
     }
 
     public function vendor(Request $request): View
@@ -23,7 +24,7 @@ class DashboardController extends Controller
         // The Browse Services tab embeds the live marketplace; its filters stay on this page (?tab=browse).
         $browse = new ServiceSearch($request, 'vendor.dashboard', ['tab' => 'browse']);
 
-        return view('dashboards.vendor', [...DashboardData::vendor(), ...$browse->toView()]);
+        return view('dashboards.vendor', [...DatabaseDashboardData::vendor(request()->user()->vendor), ...$browse->toView()]);
     }
 
     public function admin(): View

@@ -176,6 +176,7 @@ function initCustomer(root) {
             star.addEventListener('click', () => {
                 rating = value;
                 paint(rating);
+                card.querySelector('[data-review-rating]').value = rating;
                 submit.style.background = '#1a110a';
                 submit.style.cursor = 'pointer';
             });
@@ -266,6 +267,57 @@ function initVendor(root) {
             showToast(`Day ${day.dataset.availabilityDay} ${block ? 'blocked' : 'unblocked'}`);
         });
     });
+
+    const dataNode = root.querySelector('[data-vendor-data]');
+    if (!dataNode || !window.Chart) return;
+    const data = JSON.parse(dataNode.textContent);
+    const chartDefaults = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+    const chart = (selector, config) => {
+        const canvas = root.querySelector('[data-chart="' + selector + '"]');
+        if (canvas) new window.Chart(canvas, { ...config, options: { ...chartDefaults, ...config.options } });
+    };
+    chart('monthly-earnings', {
+        type: 'line',
+        data: { labels: data.charts.monthly.labels, datasets: [{ data: data.charts.monthly.values, borderColor: '#c9a84c', backgroundColor: '#c9a84c22', fill: true, tension: .35 }] },
+        options: { scales: { y: { beginAtZero: true } } },
+    });
+    chart('booking-status', {
+        type: 'doughnut',
+        data: { labels: data.charts.statuses.labels, datasets: [{ data: data.charts.statuses.values, backgroundColor: ['#c9a84c', '#4a6fdc', '#2e7d32', '#c62828'] }] },
+    });
+    chart('booking-category', {
+        type: 'bar',
+        data: { labels: data.charts.categories.labels, datasets: [{ data: data.charts.categories.values, backgroundColor: '#c9a84c' }] },
+        options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+    });
+
+    const calendar = root.querySelector('[data-vendor-calendar]');
+    if (!calendar) return;
+    let month = new Date();
+    const renderCalendar = () => {
+        const year = month.getFullYear();
+        const monthIndex = month.getMonth();
+        const first = new Date(year, monthIndex, 1);
+        const days = new Date(year, monthIndex + 1, 0).getDate();
+        const grid = calendar.querySelector('[data-calendar-grid]');
+        grid.replaceChildren();
+        calendar.querySelector('[data-calendar-label]').textContent = month.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+        for (let blank = 0; blank < first.getDay(); blank += 1) grid.append(document.createElement('div'));
+        for (let day = 1; day <= days; day += 1) {
+            const iso = year + '-' + String(monthIndex + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+            const booking = data.calendar.find((item) => item.date === iso);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-sm';
+            button.title = booking ? booking.code + ' · ' + booking.customer + ' · ' + booking.status : 'Available';
+            button.textContent = day;
+            button.style.cssText = 'padding:10px 4px;border-radius:8px;border:0;background:' + (booking ? '#c9a84c22' : '#e6f4ea') + ';color:' + (booking ? '#a07a2a' : '#2e7d32') + ';font-weight:' + (booking ? '700' : '500') + ';';
+            grid.append(button);
+        }
+    };
+    calendar.querySelector('[data-calendar-prev]').addEventListener('click', () => { month.setMonth(month.getMonth() - 1); renderCalendar(); });
+    calendar.querySelector('[data-calendar-next]').addEventListener('click', () => { month.setMonth(month.getMonth() + 1); renderCalendar(); });
+    renderCalendar();
 }
 
 /* ------------------------------------------------------------------ */
