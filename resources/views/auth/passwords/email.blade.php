@@ -1,47 +1,51 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+@section('title', 'Reset your password · Eventlynk')
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Send Password Reset Link') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+@section('story')
+<section class="auth-story password-story">
+    <x-brand class="auth-brand" aria-label="Back to Eventlynk home" />
+    <div class="auth-photo-frame">
+        <img src="{{ asset('images/image-4.png') }}" alt="Elegant event reception decoration">
+    </div>
+    <div class="auth-story-copy">
+        <p class="eyebrow">A little reset</p>
+        <h2>Make room for<br><em>new memories.</em></h2>
+        <p>We’ll help you get back to planning beautiful celebrations with the people who matter most.</p>
+        <div class="auth-pills">
+            <span>Secure account recovery</span>
+            <span>Verified Eventlynk access</span>
         </div>
     </div>
-</div>
+</section>
+@endsection
+
+@section('form')
+<form class="auth-form password-form" method="POST" action="{{ route('password.email') }}">
+    @csrf
+
+    <button type="button" class="auth-back" data-href="{{ route('login') }}">
+        ← <span>Back to log in</span>
+    </button>
+
+    <div class="auth-heading">
+        <p class="eyebrow">Account recovery</p>
+        <h1>Reset your password</h1>
+        <p>Enter the email connected to your Eventlynk account and we’ll send you a secure reset link.</p>
+    </div>
+
+    @if (session('status'))
+        <div class="auth-message success" role="status">{{ session('status') }}</div>
+    @endif
+
+    @include('auth.partials.errors')
+
+    <label class="auth-field">
+        <span>Email address</span>
+        <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" autocomplete="email" required autofocus>
+    </label>
+
+    <button class="auth-submit" type="submit">Send reset link <span>↗</span></button>
+    <p class="auth-note">The link will expire for your security. Check your spam folder if it doesn’t arrive.</p>
+</form>
 @endsection

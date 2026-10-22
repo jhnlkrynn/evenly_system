@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\Staff;
 use App\Models\User;
 use App\Models\Vendor;
@@ -81,5 +82,50 @@ class DashboardPersistenceTest extends TestCase
 
         $this->actingAs($vendorUser)->post(route('vendor.bookings.staff', $second), ['staff_ids' => [$staff->id]])
             ->assertSessionHasErrors('staff_ids');
+    }
+
+    public function test_super_admin_can_save_platform_settings(): void
+    {
+        $superAdmin = User::factory()->role('superadmin')->create();
+
+        $this->actingAs($superAdmin)->patch(route('superadmin.settings.update'), [
+            'platform_name' => 'Eventlynk Pro',
+            'support_email' => 'help@eventlynk.test',
+            'operating_locations' => 'Nasugbu, Lian, Batangas',
+            'default_currency' => 'PHP (₱)',
+            'reservation_fee_rate' => 25,
+        ])->assertRedirect()->assertSessionHas('success', 'Platform settings saved.');
+
+        $this->assertDatabaseHas('platform_settings', [
+            'key' => 'platform_name',
+            'value' => 'Eventlynk Pro',
+        ]);
+        $this->assertDatabaseHas('platform_settings', [
+            'key' => 'reservation_fee_rate',
+            'value' => '25',
+        ]);
+    }
+
+    public function test_super_admin_can_create_and_update_categories(): void
+    {
+        $superAdmin = User::factory()->role('superadmin')->create();
+
+        $this->actingAs($superAdmin)->post(route('superadmin.categories.store'), [
+            'name' => 'Flowers & Bouquets',
+            'icon' => '💐',
+        ])->assertRedirect();
+
+        $category = ServiceCategory::where('name', 'Flowers & Bouquets')->firstOrFail();
+
+        $this->actingAs($superAdmin)->patch(route('superadmin.categories.update', $category), [
+            'name' => 'Premium Flowers',
+            'icon' => '🌸',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('service_categories', [
+            'id' => $category->id,
+            'name' => 'Premium Flowers',
+            'icon' => '🌸',
+        ]);
     }
 }

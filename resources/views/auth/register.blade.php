@@ -12,7 +12,7 @@
 <form class="auth-form signup-form" method="POST" action="{{ route('register') }}" data-signup novalidate>
     @csrf
     <button type="button" class="auth-back" data-href="{{ route('home') }}">
-        ← <span>Back to<br>home</span>
+        ← <span>Back to home</span>
     </button>
     <div class="auth-heading">
         <h1>Create your account</h1>

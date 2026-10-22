@@ -85,5 +85,7 @@ Route::prefix('superadmin')->name('superadmin.')->middleware(['auth', 'role:supe
     Route::post('/admins', [SuperAdminController::class, 'storeAdmin'])->name('admins.store');
     Route::patch('/admins/{user}/toggle', [SuperAdminController::class, 'toggleAdmin'])->name('admins.toggle');
     Route::post('/categories', [SuperAdminController::class, 'storeCategory'])->name('categories.store');
+    Route::patch('/categories/{category}', [SuperAdminController::class, 'updateCategory'])->name('categories.update');
     Route::post('/barangays', [SuperAdminController::class, 'storeBarangay'])->name('barangays.store');
+    Route::patch('/settings', [SuperAdminController::class, 'updateSettings'])->name('settings.update');
 });

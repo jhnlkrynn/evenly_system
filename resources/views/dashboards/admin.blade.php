@@ -55,7 +55,7 @@
     </div>
     <div style="display: flex; align-items: center; gap: 12px;">
         <button type="button" data-show-on-tab="bookings" data-modal-open="admin-create-booking" hidden style="padding: 8px 18px; border-radius: 7px; background: #1a110a; color: #f5f0e8; border: none; font-size: 13px; font-weight: 600; cursor: pointer;">+ New Booking</button>
-        <button type="button" aria-label="Notifications" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #6b5a47;">🔔</button>
+        <button type="button" data-href="{{ route('notifications.index') }}" aria-label="Notifications" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #6b5a47;">🔔</button>
         <div style="width: 34px; height: 34px; border-radius: 50%; background: #1a110a; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 16px;">🛡</div>
     </div>
 </header>

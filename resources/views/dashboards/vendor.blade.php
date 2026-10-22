@@ -48,7 +48,7 @@
     </div>
     <div style="display: flex; align-items: center; gap: 14px;">
         <button type="button" class="vendor-add-service" data-modal-open="vendor-add-service" style="padding: 8px 20px; border-radius: 8px; background: #c9a84c; border: none; color: #1a110a; font-size: 13px; font-weight: 600; cursor: pointer;">+ Add Service</button>
-        <button type="button" aria-label="Notifications" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b5a47;">🔔</button>
+                <button type="button" data-href="{{ route('notifications.index') }}" aria-label="Notifications" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b5a47;">🔔</button>
         <div style="width: 36px; height: 36px; border-radius: 50%; background: #3d2510; border: 2px solid #c9a84c; display: flex; align-items: center; justify-content: center; color: #c9a84c; font-size: 13px; font-weight: 700; cursor: pointer;">{{ $user->initials() }}</div>
     </div>
 </header>

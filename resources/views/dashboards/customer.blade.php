@@ -260,7 +260,7 @@
 <div data-panel="favorites" hidden style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;">
     @foreach ($favorites as $f)
         <div style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 20px; position: relative;">
-            <button type="button" aria-label="Saved" style="position: absolute; top: 14px; right: 14px; background: none; border: none; color: #e53935; font-size: 20px; cursor: pointer;">♥</button>
+            <button type="button" data-wishlist aria-label="Remove from favorites" style="position: absolute; top: 14px; right: 14px; background: none; border: none; color: #e53935; font-size: 20px; cursor: pointer;">♥</button>
             <div style="width: 48px; height: 48px; border-radius: 10px; background: #f5f0e8; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px;">{{ $f['icon'] }}</div>
             <h3 style="font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #1a110a; margin-bottom: 4px;">{{ $f['name'] }}</h3>
             <div style="font-size: 12px; color: #9c8f7a; margin-bottom: 8px;">{{ $f['category'] }} · 📍 {{ $f['location'] }}</div>
@@ -273,26 +273,27 @@
 
 {{-- ── PROFILE ── --}}
 <div data-panel="profile" hidden style="max-width: 640px;">
-    <div style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 28px;">
+    <form method="POST" action="{{ route('profile.update') }}" style="background: #fff; border-radius: 12px; border: 1px solid #e8dfd0; padding: 28px;">
+        @csrf
+        @method('PUT')
         <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid #e8dfd0;">
             <div style="width: 72px; height: 72px; border-radius: 50%; background: #3d2510; border: 3px solid #c9a84c; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #c9a84c;">{{ $user->initials() }}</div>
             <div>
                 <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #1a110a; margin-bottom: 4px;">{{ $user->name }}</h3>
                 <div style="font-size: 13px; color: #9c8f7a;">Customer · Member since {{ $user->created_at->format('F Y') }}</div>
             </div>
-            <button type="button" style="margin-left: auto; padding: 8px 20px; border-radius: 8px; border: 1px solid #c9a84c; background: transparent; color: #c9a84c; font-size: 13px; font-weight: 500; cursor: pointer;">Edit Photo</button>
+            <span style="margin-left: auto; color: #9c8f7a; font-size: 12px;">Profile photo</span>
         </div>
-        @foreach ([['Full Name', $user->name], ['Email Address', $user->email], ['Phone Number', $user->phone], ['Location', 'Quezon City, Metro Manila']] as [$label, $value])
+        @foreach ([['Full Name', 'name', $user->name], ['Email Address', null, $user->email], ['Phone Number', 'phone', $user->phone]] as [$label, $name, $value])
             <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 13px; font-weight: 500; color: #6b5a47; margin-bottom: 8px;">{{ $label }}</label>
-                <input value="{{ $value }}" style="width: 100%; border: 1px solid #ddd5c8; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #1a110a; outline: none; box-sizing: border-box; background: #faf8f4;">
+                <input @if ($name) name="{{ $name }}" @else disabled @endif value="{{ $value }}" style="width: 100%; border: 1px solid #ddd5c8; border-radius: 8px; padding: 12px 14px; font-size: 14px; color: #1a110a; outline: none; box-sizing: border-box; background: #faf8f4;">
             </div>
         @endforeach
         <div style="display: flex; align-items: center; gap: 14px;">
-            <button type="button" data-flash-target="profile-saved" style="padding: 12px 32px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">Save Changes</button>
-            <span id="profile-saved" hidden style="font-size: 13px; color: #2e7d32; font-weight: 600;">✓ Changes saved!</span>
+            <button type="submit" style="padding: 12px 32px; border-radius: 8px; background: #1a110a; color: #f5f0e8; border: none; font-size: 14px; font-weight: 600; cursor: pointer;">Save Changes</button>
         </div>
-    </div>
+    </form>
 </div>
 
 {{-- ── HELP & SUPPORT ── --}}

@@ -545,6 +545,15 @@ export function initDashboard() {
     initSwitches(root);
     initFlash(root);
 
+    root.addEventListener('click', (event) => {
+        const heart = event.target.closest('[data-wishlist]');
+        if (!heart) return;
+        const saved = heart.textContent === '♡';
+        heart.textContent = saved ? '♥' : '♡';
+        heart.setAttribute('aria-label', saved ? 'Remove from favorites' : 'Add to favorites');
+        showToast(saved ? 'Added to favorites' : 'Removed from favorites');
+    });
+
     switch (root.dataset.dashboard) {
         case 'customer':
             initCustomer(root);

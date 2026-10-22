@@ -27,7 +27,7 @@
 <form class="auth-form" method="POST" action="{{ route('login') }}" novalidate>
     @csrf
     <button type="button" class="auth-back" data-href="{{ route('home') }}">
-        ← <span>Back to<br>home</span>
+        ← <span>Back to home</span>
     </button>
     <div class="auth-heading">
         <h1>Log in</h1>

@@ -11,7 +11,7 @@
 @section('form')
 <form class="auth-form signup-form" method="GET" action="{{ route('register') }}">
     <button type="button" class="auth-back" data-href="{{ route('home') }}">
-        ← <span>Back to<br>home</span>
+        ← <span>Back to home</span>
     </button>
     <div class="auth-heading">
         <h1>How will you use Eventlynk?</h1>

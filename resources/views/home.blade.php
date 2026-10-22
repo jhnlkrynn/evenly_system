@@ -1,9 +1,9 @@
 @extends('layouts.landing')
 
 @section('content')
-    <section class="landing-hero">
+    <section class="landing-hero" data-scroll-parallax>
         <div class="landing-container hero-grid">
-            <div class="hero-copy">
+            <div class="hero-copy" data-scroll-reveal="fade-up">
                 <p class="eyebrow">Event services · Nasugbu, Batangas</p>
                 <h1>Create events.<br><em>Create memories.</em></h1>
                 <p class="hero-intro">
@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <div class="hero-visual" aria-label="Elegant Eventlynk event setup">
+            <div class="hero-visual" data-scroll-reveal="fade-left" aria-label="Elegant Eventlynk event setup">
                 <img src="{{ asset('images/image-2.png') }}" alt="Elegant neutral wedding decoration setup">
                 <x-booking-card :booking="$latestBooking" />
             </div>
@@ -60,7 +60,7 @@
                 [$stats['rating'] ? number_format($stats['rating'], 1).' ★' : '—', 'Average rating'],
                 ['24h', 'Average response time'],
             ] as [$value, $label])
-                <div>
+                <div data-scroll-reveal="fade-up">
                     <strong>{{ $value }}</strong>
                     <span>{{ $label }}</span>
                 </div>
@@ -70,16 +70,16 @@
 
     <section class="landing-section services-section">
         <div class="landing-container">
-            <div class="section-heading split-heading">
+            <div class="section-heading split-heading" data-scroll-reveal="fade-up">
                 <div>
                     <p class="eyebrow">Our services</p>
                     <h2>Everything your event<br>needs, booked in one place</h2>
                 </div>
                 <button type="button" class="arrow-link" data-href="{{ route('services.index') }}">Browse all services <span>→</span></button>
             </div>
-            <div class="service-grid">
+            <div class="service-grid" data-scroll-reveal-group>
                 @foreach ($featured as ['category' => $category, 'service' => $service])
-                    <x-service-card :service="[
+                    <x-service-card data-scroll-reveal="fade-up" :service="[
                         'title' => $category->name,
                         'description' => \App\Models\ServiceCategory::SHOWCASE[$category->name]['description'],
                         'price' => 'From '.$service->formattedPrice().($service->price_unit === 'staff' ? ' / staff' : ''),
@@ -94,13 +94,13 @@
 
     <section class="landing-section steps-section" id="how-it-works">
         <div class="landing-container">
-            <div class="section-heading centered">
+            <div class="section-heading centered" data-scroll-reveal="fade-up">
                 <p class="eyebrow">How it works</p>
                 <h2>From idea to event day in four steps</h2>
             </div>
-            <div class="steps-grid">
+            <div class="steps-grid" data-scroll-reveal-group>
                 @foreach ($steps as $step)
-                    <article class="{{ $loop->last ? 'dark' : '' }}">
+                    <article class="{{ $loop->last ? 'dark' : '' }}" data-scroll-reveal="fade-up">
                         <strong>{{ $step['number'] }}</strong>
                         <h3>{{ $step['title'] }}</h3>
                         <p>{{ $step['text'] }}</p>
@@ -112,7 +112,7 @@
 
     <section class="landing-section audience-section">
         <div class="landing-container audience-grid">
-            <article>
+            <article data-scroll-reveal="fade-right">
                 <p class="eyebrow">For customers</p>
                 <h2>Plan with confidence</h2>
                 <ul>
@@ -122,7 +122,7 @@
                 </ul>
                 <button type="button" class="dark-button" data-href="{{ route('services.index') }}">Book a service</button>
             </article>
-            <article class="vendor-panel">
+            <article class="vendor-panel" data-scroll-reveal="fade-left">
                 <p class="eyebrow">For vendors</p>
                 <h2>Grow your event business</h2>
                 <ul>
@@ -137,13 +137,13 @@
 
     <section class="landing-section reviews-section">
         <div class="landing-container">
-            <div class="section-heading">
+            <div class="section-heading" data-scroll-reveal="fade-up">
                 <p class="eyebrow">Reviews</p>
                 <h2>Loved by hosts across the Philippines</h2>
             </div>
-            <div class="review-grid">
+            <div class="review-grid" data-scroll-reveal-group>
                 @forelse ($reviews as $review)
-                    <article>
+                    <article data-scroll-reveal="fade-up">
                         <div class="stars" aria-label="{{ $review->rating }} out of 5 stars">{{ str_repeat('★', $review->rating) }}</div>
                         <blockquote>“{{ $review->comment }}”</blockquote>
                         <div class="reviewer">
@@ -163,7 +163,7 @@
 
     <section class="landing-section cta-section">
         <div class="landing-container">
-            <div class="cta-panel">
+            <div class="cta-panel" data-scroll-reveal="zoom-in">
                 <h2>Ready to plan <em>your perfect event?</em></h2>
                 <p>Create a free account and get quotes from verified vendors today.</p>
                 <div>

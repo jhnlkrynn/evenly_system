@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\ActivityLog;
 use App\Models\Barangay;
 use App\Models\Booking;
+use App\Models\PlatformSetting;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\User;
@@ -75,6 +76,14 @@ final class DatabaseAdminDashboardData
         $data['totalRevenue'] = collect($data['vendors'])->sum(fn ($v) => 0);
         $data['overviewStats'] = [['label' => 'Total Vendors', 'value' => count($data['approved']), 'sub' => count($data['pending']).' pending approval', 'icon' => '🏪', 'color' => '#4a6fdc'], ['label' => 'Platform Revenue', 'value' => '₱'.number_format(Booking::where('status', '!=', 'Cancelled')->sum('total_amount')), 'sub' => 'All-time gross bookings', 'icon' => '💰', 'color' => '#2e7d32'], ['label' => 'Commission Earned', 'value' => '₱'.number_format(Booking::where('status', '!=', 'Cancelled')->sum('total_amount') * .1), 'sub' => 'Platform share to date', 'icon' => '₱', 'color' => '#c9a84c'], ['label' => 'Open Disputes', 'value' => 0, 'sub' => 'Requires attention', 'icon' => '⚖', 'color' => '#2e7d32']];
         $data['analyticsStats'] = [['label' => 'Total Bookings', 'value' => count($data['bookings']), 'change' => '', 'icon' => '📅'], ['label' => 'Platform Revenue', 'value' => '₱'.number_format(Booking::sum('total_amount')), 'change' => '', 'icon' => '💰'], ['label' => 'Active Vendors', 'value' => count($data['approved']), 'change' => '', 'icon' => '🏪'], ['label' => 'Avg. Booking Value', 'value' => '₱'.number_format(Booking::avg('total_amount') ?: 0), 'change' => '', 'icon' => '📈']];
+        $settings = PlatformSetting::query()->pluck('value', 'key')->all();
+        $data['platformSettings'] = [
+            'platform_name' => $settings['platform_name'] ?? 'Eventlynk',
+            'support_email' => $settings['support_email'] ?? 'support@eventlynk.com',
+            'operating_locations' => $settings['operating_locations'] ?? 'Nasugbu, Lian, Batangas',
+            'default_currency' => $settings['default_currency'] ?? 'PHP (₱)',
+            'reservation_fee_rate' => $settings['reservation_fee_rate'] ?? '30',
+        ];
 
         return $data;
     }

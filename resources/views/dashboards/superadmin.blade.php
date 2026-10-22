@@ -290,7 +290,7 @@
                         <td style="padding: 14px 18px; font-size: 13px; color: #3d2510;">{{ $cat['vendors'] }} vendors</td>
                         <td style="padding: 14px 18px; font-size: 13px; font-weight: 600; color: #2e7d32;">₱{{ number_format($cat['bookings'] * 2000 * ($cat['commission'] / 100)) }}</td>
                         <td style="padding: 14px 18px;">
-                            <button type="button" style="padding: 5px 12px; border-radius: 6px; border: 1px solid #e8dfd0; background: transparent; color: #6b5a47; font-size: 12px; cursor: pointer;">View Log</button>
+                            <button type="button" data-tab-link="activity" style="padding: 5px 12px; border-radius: 6px; border: 1px solid #e8dfd0; background: transparent; color: #6b5a47; font-size: 12px; cursor: pointer;">View Log</button>
                         </td>
                     </tr>
                 @endforeach
@@ -433,19 +433,24 @@
 
 {{-- ── SETTINGS ── --}}
 <div data-panel="settings" hidden style="max-width: 640px;">
-    <div style="{{ $card }} padding: 28px 32px; margin-bottom: 20px;">
+    <form method="POST" action="{{ route('superadmin.settings.update') }}" style="{{ $card }} padding: 28px 32px; margin-bottom: 20px;">
+        @csrf
+        @method('PATCH')
         <h3 style="font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: #1a110a; margin-bottom: 20px; margin-top: 0px;">Platform Settings</h3>
-        @foreach ([['Platform Name', 'Eventlynk'], ['Support Email', 'support@eventlynk.com'], ['Operating Locations', 'Nasugbu, Lian, Batangas'], ['Default Currency', 'PHP (₱)'], ['Reservation Fee Rate', '30% of total']] as [$settingLabel, $settingValue])
+        @foreach ([
+            ['Platform Name', 'platform_name', 'text'],
+            ['Support Email', 'support_email', 'email'],
+            ['Operating Locations', 'operating_locations', 'text'],
+            ['Default Currency', 'default_currency', 'text'],
+            ['Reservation Fee Rate (%)', 'reservation_fee_rate', 'number'],
+        ] as [$settingLabel, $settingKey, $settingType])
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0ebe2;">
-                <span style="font-size: 13px; color: #6b5a47; font-weight: 500;">{{ $settingLabel }}</span>
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 13px; color: #1a110a; font-weight: 600;">{{ $settingValue }}</span>
-                    <button type="button" style="padding: 4px 10px; border-radius: 5px; border: 1px solid #c9a84c44; background: transparent; color: #c9a84c; font-size: 11px; cursor: pointer;">Edit</button>
-                </div>
+                <label for="setting-{{ $settingKey }}" style="font-size: 13px; color: #6b5a47; font-weight: 500;">{{ $settingLabel }}</label>
+                <input id="setting-{{ $settingKey }}" name="{{ $settingKey }}" type="{{ $settingType }}" value="{{ $platformSettings[$settingKey] }}" @if ($settingType === 'number') min="0" max="100" step="0.01" @endif required style="{{ $input }} max-width: 280px;">
             </div>
         @endforeach
-        <button type="button" data-toast-message="Settings saved" style="margin-top: 22px; padding: 11px 28px; border-radius: 8px; border: none; background: #1a110a; color: #f5f0e8; font-size: 13px; font-weight: 600; cursor: pointer;">Save Changes</button>
-    </div>
+        <button type="submit" style="margin-top: 22px; padding: 11px 28px; border-radius: 8px; border: none; background: #1a110a; color: #f5f0e8; font-size: 13px; font-weight: 600; cursor: pointer;">Save Changes</button>
+    </form>
 </div>
 @endsection
 
@@ -497,45 +502,54 @@
 {{-- Edit category --}}
 @foreach ($categories as $cat)
     <x-dashboard.modal id="edit-category-{{ $cat['id'] }}" data-edit-category="{{ $cat['id'] }}" panel-style="{{ $modalPanel }} width: 420px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-            <h3 style="{{ $modalTitle }}">Edit Category</h3>
-            <button type="button" data-modal-close aria-label="Close" style="{{ $closeX }}">✕</button>
-        </div>
-        <div style="margin-bottom: 14px;">
-            <label style="{{ $label }}">Category Name</label>
-            <input value="{{ $cat['name'] }}" data-edit-name style="{{ $input }}">
-        </div>
-        <div style="margin-bottom: 14px;">
-            <label style="{{ $label }}">Icon Emoji</label>
-            <input value="{{ $cat['icon'] }}" data-edit-icon style="{{ $input }}">
-        </div>
-        <div style="margin-bottom: 20px;">
-            <label style="{{ $label }}">Commission Rate (%)</label>
-            <input type="number" min="0" max="100" value="{{ $cat['commission'] }}" data-edit-rate style="{{ $input }}">
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button type="button" data-modal-close style="{{ $cancelBtn }}">Cancel</button>
-            <button type="button" data-save-category style="{{ $saveBtn }}">Save Changes</button>
-        </div>
+        <form method="POST" action="{{ route('superadmin.categories.update', $cat['id']) }}">
+            @csrf
+            @method('PATCH')
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+                <h3 style="{{ $modalTitle }}">Edit Category</h3>
+                <button type="button" data-modal-close aria-label="Close" style="{{ $closeX }}">✕</button>
+            </div>
+            <div style="margin-bottom: 14px;">
+                <label style="{{ $label }}">Category Name</label>
+                <input name="name" value="{{ $cat['name'] }}" data-edit-name style="{{ $input }}" required>
+            </div>
+            <div style="margin-bottom: 14px;">
+                <label style="{{ $label }}">Icon Emoji</label>
+                <input name="icon" value="{{ $cat['icon'] }}" data-edit-icon style="{{ $input }}">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="{{ $label }}">Commission Rate (%)</label>
+                <input type="number" min="0" max="100" value="{{ $cat['commission'] }}" data-edit-rate style="{{ $input }}">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" data-modal-close style="{{ $cancelBtn }}">Cancel</button>
+                <button type="submit" data-save-category style="{{ $saveBtn }}">Save Changes</button>
+            </div>
+        </form>
     </x-dashboard.modal>
 @endforeach
 
 {{-- Add category --}}
 <x-dashboard.modal id="add-category" panel-style="{{ $modalPanel }} width: 420px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-        <h3 style="{{ $modalTitle }}">Add New Category</h3>
-        <button type="button" data-modal-close aria-label="Close" style="{{ $closeX }}">✕</button>
-    </div>
-    @foreach ([['Category Name', 'text', 'e.g. Flowers & Bouquets'], ['Icon Emoji', 'text', 'e.g. 💐'], ['Commission Rate (%)', 'number', '10']] as [$fieldLabel, $type, $placeholder])
-        <div style="margin-bottom: 16px;">
-            <label style="{{ $label }}">{{ $fieldLabel }}</label>
-            <input type="{{ $type }}" placeholder="{{ $placeholder }}" style="{{ $input }}">
+    <form method="POST" action="{{ route('superadmin.categories.store') }}">
+        @csrf
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+            <h3 style="{{ $modalTitle }}">Add New Category</h3>
+            <button type="button" data-modal-close aria-label="Close" style="{{ $closeX }}">✕</button>
         </div>
-    @endforeach
-    <div style="display: flex; gap: 10px; margin-top: 8px;">
-        <button type="button" data-modal-close style="{{ $cancelBtn }}">Cancel</button>
-        <button type="button" data-modal-close data-toast-message="Category added successfully" style="{{ $saveBtn }}">Add Category</button>
-    </div>
+        <div style="margin-bottom: 16px;">
+            <label style="{{ $label }}">Category Name</label>
+            <input name="name" type="text" placeholder="e.g. Flowers & Bouquets" style="{{ $input }}" required>
+        </div>
+        <div style="margin-bottom: 16px;">
+            <label style="{{ $label }}">Icon Emoji</label>
+            <input name="icon" type="text" placeholder="e.g. 💐" style="{{ $input }}">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button type="button" data-modal-close style="{{ $cancelBtn }}">Cancel</button>
+            <button type="submit" style="{{ $saveBtn }}">Add Category</button>
+        </div>
+    </form>
 </x-dashboard.modal>
 
 {{-- Dispute detail --}}
