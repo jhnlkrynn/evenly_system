@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,8 @@ Auth::routes();
 Route::get('/register/role', [RoleSelectionController::class, 'show'])->middleware('guest')->name('register.role');
 
 Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+Route::get('/vendors/{vendor}', [VendorController::class, 'show'])->name('vendors.show');
 Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
 
 // Every signed-in role

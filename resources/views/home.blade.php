@@ -12,31 +12,35 @@
                     date, and track every detail in one place.
                 </p>
 
-                <form class="hero-search" action="{{ route('services.index') }}" method="GET">
+                <form class="hero-search" action="{{ route('services.index') }}" method="GET" data-clean-get>
                     <label>
                         <span>Service</span>
-                        <input name="q" placeholder="Decoration, catering...">
+                        <input name="search" list="hero-categories" placeholder="Decoration, catering..." maxlength="100">
+                        <datalist id="hero-categories">
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->name }}"></option>
+                            @endforeach
+                        </datalist>
                     </label>
                     <label>
                         <span>Location</span>
-                        <select name="location">
+                        <select name="barangay">
                             <option value="">Any barangay</option>
-                            <option>Poblacion</option>
-                            <option>Wawa</option>
-                            <option>Calayo</option>
-                            <option>Bucana</option>
+                            @foreach ($barangays as $barangay)
+                                <option>{{ $barangay }}</option>
+                            @endforeach
                         </select>
                     </label>
                     <label>
                         <span>Event date</span>
-                        <input type="date" name="date">
+                        <input type="date" name="date" min="{{ now()->toDateString() }}">
                     </label>
                     <button type="submit">Search</button>
                 </form>
                 <div class="popular-row">
                     <span>Popular</span>
-                    @foreach (['Debut', 'Wedding', 'Corporate gala', 'Birthday'] as $tag)
-                        <button type="button" data-href="{{ route('services.index', ['q' => $tag]) }}">{{ $tag }}</button>
+                    @foreach (['Debut' => 'debut', 'Wedding' => 'wedding', 'Corporate gala' => 'corporate', 'Birthday' => 'birthday'] as $tag => $event)
+                        <button type="button" data-href="{{ route('services.index', ['events' => [$event]]) }}">{{ $tag }}</button>
                     @endforeach
                 </div>
             </div>
@@ -54,7 +58,12 @@
 
     <section class="stats-strip" aria-label="Eventlynk platform statistics">
         <div class="landing-container stats-grid">
-            @foreach ([['500+', 'Verified vendors'], ['10K+', 'Events booked'], ['98%', 'Customer satisfaction'], ['24h', 'Average response time']] as [$value, $label])
+            @foreach ([
+                [number_format($stats['vendors']), 'Verified vendors'],
+                [number_format($stats['completed']), 'Events completed'],
+                [$stats['rating'] ? number_format($stats['rating'], 1).' ★' : '—', 'Average rating'],
+                ['24h', 'Average response time'],
+            ] as [$value, $label])
                 <div>
                     <strong>{{ $value }}</strong>
                     <span>{{ $label }}</span>
@@ -73,8 +82,15 @@
                 <button type="button" class="arrow-link" data-href="{{ route('services.index') }}">Browse all services <span>→</span></button>
             </div>
             <div class="service-grid">
-                @foreach ($services as $service)
-                    <x-service-card :service="$service" />
+                @foreach ($featured as ['category' => $category, 'service' => $service])
+                    <x-service-card :service="[
+                        'title' => $category->name,
+                        'description' => \App\Models\ServiceCategory::SHOWCASE[$category->name]['description'],
+                        'price' => 'From '.$service->formattedPrice().($service->price_unit === 'staff' ? ' / staff' : ''),
+                        'image' => $category->imageUrl(),
+                        'highlight' => \App\Models\ServiceCategory::SHOWCASE[$category->name]['highlight'] ?? null,
+                        'url' => route('services.index', ['categories' => [$category->id]]),
+                    ]" />
                 @endforeach
             </div>
         </div>
@@ -130,19 +146,21 @@
                 <h2>Loved by hosts across the Philippines</h2>
             </div>
             <div class="review-grid">
-                @foreach ($reviews as $review)
+                @forelse ($reviews as $review)
                     <article>
-                        <div class="stars">★★★★★</div>
-                        <blockquote>“{{ $review['quote'] }}”</blockquote>
+                        <div class="stars" aria-label="{{ $review->rating }} out of 5 stars">{{ str_repeat('★', $review->rating) }}</div>
+                        <blockquote>“{{ $review->comment }}”</blockquote>
                         <div class="reviewer">
-                            <span>{{ collect(explode(' ', $review['name']))->map(fn ($part) => $part[0])->join('') }}</span>
+                            <span>{{ $review->customer->initials() }}</span>
                             <p>
-                                <strong>{{ $review['name'] }}</strong>
-                                <small>{{ $review['event'] }}</small>
+                                <strong>{{ $review->customer->name }}</strong>
+                                <small>{{ $review->booking->event_type }} · {{ $review->booking->barangay ?? 'Nasugbu' }}</small>
                             </p>
                         </div>
                     </article>
-                @endforeach
+                @empty
+                    <p class="modal-copy">Reviews from completed events will appear here.</p>
+                @endforelse
             </div>
         </div>
     </section>

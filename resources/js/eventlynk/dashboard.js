@@ -69,7 +69,7 @@ function initTabs(root) {
         if (trigger) activate(trigger.dataset.tab || trigger.dataset.tabLink);
     });
 
-    const initial = window.location.hash.slice(1);
+    const initial = window.location.hash.slice(1) || new URLSearchParams(window.location.search).get('tab') || '';
     activate(navButtons.some((b) => b.dataset.tab === initial) ? initial : navButtons.find((b) => b.classList.contains('active')).dataset.tab, {
         updateHash: false,
     });

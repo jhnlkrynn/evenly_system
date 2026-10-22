@@ -3,13 +3,14 @@
     'options',
     'value' => '',
     'name' => null,
+    'form' => null,
     'placeholder' => 'Search...',
     'allLabel' => 'All',
 ])
 
 <div data-searchable-select data-placeholder="{{ $placeholder }}" data-all-label="{{ $allLabel }}" {{ $attributes->merge(['style' => 'position: relative;']) }}>
     @if ($name)
-        <input type="hidden" name="{{ $name }}" value="{{ $value }}" data-select-value>
+        <input type="hidden" name="{{ $name }}" value="{{ $value }}" @if ($form) form="{{ $form }}" @endif data-select-value>
     @endif
     <button type="button" data-select-trigger aria-haspopup="listbox" aria-expanded="false"
         style="width: 100%; padding: 10px 32px 10px 12px; border: 1.5px solid #e8dfd0; border-radius: 8px; background: #fff; font-size: 13px; color: {{ $value ? '#1a110a' : '#9c8f7a' }}; text-align: left; cursor: pointer; position: relative;">{{ $value ?: $placeholder }}<span data-select-caret style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%) rotate(0deg); font-size: 11px; color: #9c8f7a; transition: transform 0.15s;">▼</span>

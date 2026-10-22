@@ -175,10 +175,6 @@ class DashboardData
             ],
             'bookedDays' => [5, 10, 14, 18, 24, 28],
             'blockedDays' => [1, 2, 3, 4, 20, 21],
-            'barangays' => MockData::BARANGAYS,
-            'vendors' => MockData::MARKET_VENDORS,
-            'serviceTypes' => MockData::SERVICE_TYPES,
-            'eventFilters' => MockData::EVENT_FILTERS,
         ];
     }
 

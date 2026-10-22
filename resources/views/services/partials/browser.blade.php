@@ -1,41 +1,27 @@
 {{--
-    Browse Services marketplace (BrowseServicesPage.tsx).
-    Rendered standalone at /services and embedded in the vendor dashboard.
-    Filtering, sorting and chips are handled by resources/js/eventlynk/browse.js.
+    Browse Services marketplace (BrowseServicesPage.tsx design), backed by App\Support\ServiceSearch.
+    One GET form (#browse-filters) drives the search bar, the filter panel and the sort menu;
+    resources/js/eventlynk/browse.js submits it as filters change.
+    Rendered at /services and inside the vendor dashboard (embedded = true).
 --}}
 @php
     $embedded = $embedded ?? false;
-    $query = request('q', '');
-    $location = request('location', '');
-    $date = request('date') ?: '2026-12-12';
-    $parsed = \Illuminate\Support\Carbon::parse($date);
-    $dateShort = $parsed->format('M j');
-    $dateLong = $parsed->format('D, M j');
-    $vendors = collect($vendors)->sortByDesc('reviews')->values();
+    $date = $filters['date'];
+    $placeLabel = $filters['barangay'] !== '' ? $filters['barangay'].', Nasugbu' : 'Nasugbu, Batangas';
 @endphp
 
 <div class="browse-clean-page {{ $embedded ? 'embedded' : '' }}" data-browse>
     @unless ($embedded)
-        <header class="browse-clean-header">
-            <div class="browse-clean-nav">
-                <x-brand class="browse-brand" />
-                <nav>
-                    <button type="button" data-href="{{ route('home') }}">Home</button>
-                    <button type="button" class="active">Browse Services</button>
-                    <button type="button" data-open-modal="browse-how">How It Works</button>
-                    <button type="button" data-open-modal="browse-about">About Us</button>
-                </nav>
-                <div>
-                    @auth
-                        <x-user-menu />
-                    @else
-                        <button type="button" class="browse-login" data-href="{{ route('login') }}">Log in</button>
-                        <button type="button" class="browse-signup" data-href="{{ route('register') }}">Sign up</button>
-                    @endauth
-                </div>
-            </div>
-        </header>
+        @include('services.partials.header')
     @endunless
+
+    <form id="browse-filters" method="GET" action="{{ $formAction }}" data-browse-form hidden>
+        @foreach ($baseQuery as $key => $value)
+            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+        @endforeach
+        <input type="hidden" name="rating" value="{{ $filters['rating'] ?: '' }}" data-rating-input>
+        <input type="hidden" name="available" value="0">
+    </form>
 
     <section class="browse-search-hero">
         <div class="browse-clean-container">
@@ -44,17 +30,17 @@
             <div class="browse-search-bar">
                 <label>
                     <span>What</span>
-                    <input value="{{ $query }}" data-filter-query placeholder="Decoration, serving staff, vendor name...">
+                    <input form="browse-filters" name="search" value="{{ $filters['search'] }}" maxlength="100" placeholder="Decoration, serving staff, vendor name...">
                 </label>
                 <label class="location-search">
                     <span>Where</span>
-                    <x-searchable-select :options="$barangays" :value="$location" placeholder="Nasugbu, Batangas" all-label="All of Nasugbu, Batangas" data-filter-location />
+                    <x-searchable-select :options="$barangays->all()" :value="$filters['barangay']" name="barangay" form="browse-filters" placeholder="Nasugbu, Batangas" all-label="All of Nasugbu, Batangas" data-auto-submit />
                 </label>
                 <label>
                     <span>When</span>
-                    <input type="date" value="{{ $date }}" data-filter-date>
+                    <input form="browse-filters" type="date" name="date" value="{{ $date?->format('Y-m-d') }}" min="{{ now()->toDateString() }}" data-auto-submit>
                 </label>
-                <button type="button" data-close-filters>Search</button>
+                <button form="browse-filters" type="submit">Search</button>
             </div>
         </div>
     </section>
@@ -65,15 +51,15 @@
             <aside class="browse-filter-panel" data-filter-panel>
                 <div class="filter-heading">
                     <h2>Filters</h2>
-                    <button type="button" data-clear-filters>Clear all</button>
+                    <button type="button" data-href="{{ $clearUrl }}">Clear all</button>
                 </div>
                 <section class="filter-group">
                     <h3>Service</h3>
-                    @foreach ($serviceTypes as $type)
+                    @foreach ($categories as $category)
                         <label class="filter-check">
-                            <input type="checkbox" value="{{ $type }}" data-filter-service>
-                            <span>{{ $type }}</span>
-                            <small>{{ $vendors->where('badge', $type)->count() }}</small>
+                            <input form="browse-filters" type="checkbox" name="categories[]" value="{{ $category->id }}" @checked(in_array($category->id, $filters['categories'], true)) data-auto-submit>
+                            <span>{{ $category->name }}</span>
+                            <small>{{ $category->services_count }}</small>
                         </label>
                     @endforeach
                 </section>
@@ -82,35 +68,35 @@
                     <div class="budget-fields">
                         <label>
                             <span>Min</span>
-                            <input type="number" value="0" min="0" data-filter-min>
+                            <input form="browse-filters" type="number" name="min_price" value="{{ $filters['min_price'] !== null ? (int) $filters['min_price'] : '' }}" min="0" step="100" placeholder="0" data-auto-submit>
                         </label>
                         <i>–</i>
                         <label>
                             <span>Max</span>
-                            <input type="number" value="30000" min="0" data-filter-max>
+                            <input form="browse-filters" type="number" name="max_price" value="{{ $filters['max_price'] !== null ? (int) $filters['max_price'] : '' }}" min="0" step="100" placeholder="Any" data-auto-submit>
                         </label>
                     </div>
                 </section>
                 <section class="filter-group">
                     <h3>Rating</h3>
                     <div class="rating-pills">
-                        @foreach ([[0, 'Any'], [4.5, '4.5+'], [4.8, '4.8+']] as [$value, $label])
-                            <button type="button" class="{{ $value === 0 ? 'active' : '' }}" data-filter-rating="{{ $value }}">{{ $label }}</button>
+                        @foreach ($ratings as $value => $label)
+                            <button type="button" class="{{ (float) $value === $filters['rating'] ? 'active' : '' }}" data-rating="{{ (string) $value === '0' ? '' : $value }}">{{ $label }}</button>
                         @endforeach
                     </div>
                 </section>
                 <section class="filter-group">
                     <h3>Good for</h3>
-                    @foreach ($eventFilters as $event)
+                    @foreach ($events as $key => $event)
                         <label class="filter-check">
-                            <input type="checkbox" value="{{ $event }}" data-filter-event>
-                            <span>{{ $event }}</span>
+                            <input form="browse-filters" type="checkbox" name="events[]" value="{{ $key }}" @checked(in_array($key, $filters['events'], true)) data-auto-submit>
+                            <span>{{ $event['label'] }}</span>
                         </label>
                     @endforeach
                 </section>
                 <label class="availability-toggle">
-                    <span>Only show vendors free on <span data-date-short>{{ $dateShort }}</span></span>
-                    <input type="checkbox" checked data-filter-available>
+                    <span>Only show vendors free on {{ $date ? $date->format('M j') : 'your date' }}</span>
+                    <input form="browse-filters" type="checkbox" name="available" value="1" @checked($filters['available']) data-auto-submit>
                 </label>
                 <p class="filter-note">Results update as you choose — no apply button needed.</p>
             </aside>
@@ -118,34 +104,47 @@
             <div class="browse-results-main">
                 <div class="results-toolbar">
                     <div>
-                        <strong data-result-label>{{ $vendors->count() }} vendors</strong><span> in Nasugbu, Batangas · free on <span data-date-long>{{ $dateLong }}</span></span>
+                        <strong>{{ $results->total() }} {{ Str::plural('service', $results->total()) }}</strong><span> in {{ $placeLabel }} · {{ $date ? ($filters['available'] ? 'free on ' : 'on ').$date->format('D, M j') : 'any date' }}</span>
                     </div>
                     <label>
                         Sort by
-                        <select data-filter-sort>
-                            <option>Recommended</option>
-                            <option>Highest rated</option>
-                            <option>Price: low to high</option>
-                            <option>Price: high to low</option>
+                        <select form="browse-filters" name="sort" data-auto-submit data-default="recommended">
+                            @foreach ($sorts as $value => $label)
+                                <option value="{{ $value }}" @selected($filters['sort'] === $value)>{{ $label }}</option>
+                            @endforeach
                         </select>
                     </label>
                 </div>
-                <div class="active-filter-chips" data-filter-chips>
-                    <button type="button" data-chip="available">Available on date ×</button>
-                </div>
 
-                <div class="vendor-market-grid" data-vendor-grid>
-                    @foreach ($vendors as $vendor)
-                        <x-vendor-card :vendor="$vendor" :date-label="$dateShort" :book-url="route('bookings.create')" />
-                    @endforeach
-                </div>
-                <div class="browse-empty" data-browse-empty hidden>
-                    <h2>No vendors match those filters</h2>
-                    <p>Try widening your budget or clearing one of the selected services.</p>
-                    <button type="button" data-clear-filters>Clear filters</button>
-                </div>
+                @if ($chips)
+                    <div class="active-filter-chips">
+                        @foreach ($chips as $chip)
+                            <button type="button" data-href="{{ $chip['url'] }}" aria-label="Remove filter {{ $chip['label'] }}">{{ $chip['label'] }} ×</button>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($results->isNotEmpty())
+                    <div class="vendor-market-grid">
+                        @foreach ($results as $service)
+                            <x-service-result-card :service="$service" :date="$date" :booked="$bookedVendorIds->contains($service->vendor_id)" />
+                        @endforeach
+                    </div>
+                @else
+                    <div class="browse-empty">
+                        <h2>No services match those filters</h2>
+                        <p>Try another date, widening your budget, or removing one of the filters above.</p>
+                        <button type="button" data-href="{{ $clearUrl }}">Clear filters</button>
+                    </div>
+                @endif
+
                 <div class="browse-results-end">
-                    <span>Showing <span data-result-count>{{ $vendors->count() }}</span> of {{ $vendors->count() }} vendors</span>
+                    @if ($results->total())
+                        <span>Showing {{ $results->firstItem() }}–{{ $results->lastItem() }} of {{ $results->total() }} {{ Str::plural('service', $results->total()) }}</span>
+                    @endif
+                    @if ($results->hasPages())
+                        <nav class="browse-pagination" aria-label="Results pages">{{ $results->links('pagination.eventlynk') }}</nav>
+                    @endif
                     <button type="button" data-href="{{ route('bookings.create') }}">Can’t find what you need? Tell us about your event →</button>
                 </div>
             </div>
@@ -153,30 +152,6 @@
     </section>
 
     @unless ($embedded)
-        <section class="browse-trust-strip">
-            <div class="browse-clean-container">
-                <span>Verified vendors and businesses</span>
-                <span>Secure online payments</span>
-                <span>Support available when you need it</span>
-            </div>
-        </section>
-        <footer class="browse-clean-footer">© 2026 Eventlynk · Terms · Privacy · Help center</footer>
-
-        <div class="browse-modal" id="browse-how" data-modal hidden>
-            <div>
-                <button type="button" data-modal-close aria-label="Close">×</button>
-                <p>How it works</p>
-                <h2>Find, compare, and book with confidence.</h2>
-                <span>Search verified vendors, compare packages, reserve your date, and track every booking from your dashboard.</span>
-            </div>
-        </div>
-        <div class="browse-modal" id="browse-about" data-modal hidden>
-            <div>
-                <button type="button" data-modal-close aria-label="Close">×</button>
-                <p>About Eventlynk</p>
-                <h2>Local event services, linked in one place.</h2>
-                <span>Eventlynk connects customers with verified event-service vendors across Nasugbu, Batangas.</span>
-            </div>
-        </div>
+        @include('services.partials.footer')
     @endunless
 </div>

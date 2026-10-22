@@ -1,10 +1,11 @@
+{{-- Homepage category card: title, description, "From ₱…" price, photo, link to the filtered Browse page. --}}
 @props(['service'])
 
-<article class="service-card {{ $service['featured'] ? 'featured' : '' }}">
+<article class="service-card {{ $service['highlight'] ?? false ? 'featured' : '' }}">
     <div class="service-image">
         <img src="{{ $service['image'] }}" alt="{{ $service['title'] }} service">
-        @if ($service['featured'])
-            <span>Best value</span>
+        @if ($service['highlight'] ?? false)
+            <span>{{ $service['highlight'] }}</span>
         @endif
     </div>
     <div class="service-body">
@@ -12,7 +13,7 @@
         <p>{{ $service['description'] }}</p>
         <div>
             <strong>{{ $service['price'] }}</strong>
-            <button type="button" data-href="{{ route('services.index') }}">Book now →</button>
+            <button type="button" data-href="{{ $service['url'] }}">Book now →</button>
         </div>
     </div>
 </article>
