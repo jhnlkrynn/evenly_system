@@ -3,23 +3,39 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
+    /** Password for every seeded account. */
+    public const PASSWORD = 'password123';
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        self::account('Super Admin', 'superadmin@eventlynk.com', 'superadmin');
+        self::account('Owner / Admin', 'admin@eventlynk.com', 'admin');
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            ReferenceDataSeeder::class,
+            VendorSeeder::class,
+            BookingSeeder::class,
         ]);
+    }
+
+    /** Create a verified, active login. */
+    public static function account(string $name, string $email, string $role, ?string $phone = null, bool $active = true): User
+    {
+        $user = new User;
+        $user->forceFill([
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'password' => self::PASSWORD,
+            'role' => $role,
+            'is_active' => $active,
+            'email_verified_at' => now(),
+        ])->save();
+
+        return $user;
     }
 }
